@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Modifier les conditions générales') }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>{{ _('Modifier les conditions générales') }}</h1>
+    <div class="subtitle">{{ _("Mise en forme : « ## » au début d'une ligne pour un titre, « [x] » pour une case cochée, « - » pour une puce.") }}</div>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-light" href="{{ url_for('conditions.view') }}"><i class="bi bi-arrow-left"></i> {{ _('Retour') }}</a>
+    <form method="post" action="{{ url_for('conditions.reset') }}" data-confirm="{{ _('Remplacer le texte actuel par le texte par défaut ?') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-outline-danger"><i class="bi bi-arrow-counterclockwise"></i> {{ _('Texte par défaut') }}</button>
+    </form>
+  </div>
+</div>
+<form method="post" class="card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="card-body row g-3">
+    <div class="col-lg-6">
+      <label class="form-label" for="title_fr">{{ _('Titre en français') }} <span class="text-danger">*</span></label>
+      <input class="form-control mb-3" id="title_fr" name="title_fr" dir="ltr" value="{{ cg.title_fr or '' }}" required>
+      <label class="form-label" for="body_fr">{{ _('Texte en français') }} <span class="text-danger">*</span></label>
+      <textarea class="form-control" id="body_fr" name="body_fr" dir="ltr" rows="26" required>{{ cg.body_fr or '' }}</textarea>
+    </div>
+    <div class="col-lg-6">
+      <label class="form-label" for="title_ar">{{ _('Titre en arabe') }} <span class="text-danger">*</span></label>
+      <input class="form-control mb-3" id="title_ar" name="title_ar" dir="rtl" value="{{ cg.title_ar or '' }}" required>
+      <label class="form-label" for="body_ar">{{ _('Texte en arabe') }} <span class="text-danger">*</span></label>
+      <textarea class="form-control" id="body_ar" name="body_ar" dir="rtl" rows="26" required>{{ cg.body_ar or '' }}</textarea>
+    </div>
+  </div>
+  <div class="card-footer bg-white text-end"><button class="btn btn-primary"><i class="bi bi-check-lg"></i> {{ _('Enregistrer') }}</button></div>
+</form>
+{% endblock %}

@@ -429,3 +429,45 @@ def test_default_language_is_arabic():
 
     app = create_app(ArabicConfig)
     assert b'dir="rtl"' in app.test_client().get("/").data
+
+
+# ---------------------------------------------------------------- conditions générales (verso)
+
+def test_general_conditions_page_and_pdf(client, app):
+    page = client.get("/conditions/")
+    assert page.status_code == 200
+    assert "ÂGE LÉGAL POUR LOUER".encode() in page.data and "السن القانوني للكراء".encode() in page.data
+    assert "les tribunaux de Laâyoune".encode() in page.data and "محاكم العيون".encode() in page.data
+    client.set_cookie("lang", "ar")
+    assert b'dir="rtl"' in client.get("/conditions/").data
+    pdf = client.get("/conditions/pdf")
+    assert pdf.status_code == 200 and pdf.data.startswith(b"%PDF")
+
+
+def test_general_conditions_edit_and_reset(client, app):
+    data = {"title_fr": "Mes conditions", "title_ar": "شروطي", "body_fr": "## TITRE\n[x] Case\nTexte libre", "body_ar": "## عنوان\nنص"}
+    resp = client.post("/conditions/modifier", data=data, follow_redirects=True)
+    assert b"Mes conditions" in resp.data and b"TITRE" in resp.data
+    resp = client.post("/conditions/modifier", data={**data, "body_ar": ""}, follow_redirects=True)
+    assert "obligatoires".encode() in resp.data
+    client.post("/conditions/reinitialiser")
+    assert "ÂGE LÉGAL POUR LOUER".encode() in client.get("/conditions/").data
+
+
+def test_parse_blocks():
+    from app.conditions import parse_blocks
+
+    assert parse_blocks("## A\n\n[x] b\n- c\nd") == [("title", "A"), ("check", "b"), ("bullet", "c"), ("para", "d")]
+
+
+def test_contract_recto_verso(client, app, vehicle):
+    from pypdf import PdfReader
+    import io
+
+    client.post("/contrats/nouveau", data=contract_form(vehicle))
+    assert "ÂGE LÉGAL".encode() not in client.get("/contrats/1").data
+    assert "ÂGE LÉGAL".encode() in client.get("/contrats/1?verso=1").data
+    assert len(PdfReader(io.BytesIO(client.get("/contrats/1/pdf").data)).pages) == 1
+    verso = client.get("/contrats/1/pdf?verso=1")
+    assert "recto-verso" in verso.headers["Content-Disposition"]
+    assert len(PdfReader(io.BytesIO(verso.data)).pages) == 2

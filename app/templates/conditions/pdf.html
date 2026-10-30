@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<style>
+{{ pdf_font_css|safe }}
+@page { size: a4 portrait; margin: 9mm 10mm 9mm 10mm; }
+body { font-size: 8pt; color: #000; }
+table { width: 100%; }
+{% include "conditions/_pdf_css.html" %}
+</style>
+</head>
+<body>
+{% include "conditions/_pdf_body.html" %}
+</body>
+</html>

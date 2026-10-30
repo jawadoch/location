@@ -1,0 +1,35 @@
+{# Conditions générales pour le PDF (xhtml2pdf : tableaux, pas de grid/flex) #}
+{% set ar_ok = pdf_arabic %}
+<table class="cg-head"><tr>
+  <td width="28%">{% if logo_file %}<img src="{{ logo_file }}" width="130" height="48">{% else %}<b style="font-size:14pt">{{ agency.name }}</b>{% endif %}</td>
+  <td width="72%"><div class="cg-heading">{{ cg.title_fr }}{% if ar_ok %} / {{ cg.title_ar }}{% endif %}</div></td>
+</tr></table>
+<div class="cg-rule"></div>
+
+<table><tr>
+  <td width="50%" class="cg-col" style="padding-right:3mm">
+    {% for kind, text in cg_fr %}
+      {% if kind == 'title' %}<div class="cg-title">&gt; {{ text }}</div>
+      {% elif kind == 'check' %}<p class="cg-p">&#9632; {{ text }}</p>
+      {% elif kind == 'bullet' %}<p class="cg-p">- {{ text }}</p>
+      {% else %}<p class="cg-p">{{ text }}</p>{% endif %}
+    {% endfor %}
+  </td>
+  <td width="50%" class="cg-col-ar" style="padding-left:3mm">
+    {% if ar_ok %}
+    {% for kind, text in cg_ar %}
+      {% if kind == 'title' %}<div class="cg-title-ar" dir="rtl">{{ text }}</div>
+      {% elif kind == 'check' %}<p class="cg-p-ar" dir="rtl">&#9632; {{ text }}</p>
+      {% elif kind == 'bullet' %}<p class="cg-p-ar" dir="rtl">- {{ text }}</p>
+      {% else %}<p class="cg-p-ar" dir="rtl">{{ text }}</p>{% endif %}
+    {% endfor %}
+    {% endif %}
+  </td>
+</tr></table>
+
+<table class="cg-sign" style="margin-top:2mm"><tr>
+  <td width="49%">Lu et approuvé - signature du locataire</td>
+  <td width="2%" style="border:0"></td>
+  <td width="49%" dir="rtl">{% if ar_ok %}قرأت ووافقت - توقيع المكتري{% endif %}</td>
+</tr></table>
+<div class="cg-footer">{{ agency.name }} - {{ agency.address }}{% if agency.city %}, {{ agency.city }}{% endif %}{% if agency.phone %} - Tél : {{ agency.phone }}{% endif %}</div>

@@ -18,6 +18,12 @@
   <button class="btn btn-primary" type="button" data-print><i class="bi bi-printer"></i> {{ _('Imprimer (A4)') }}</button>
   <a class="btn btn-outline-primary" href="{{ url_for('contracts.pdf', contract_id=c.id) }}"><i class="bi bi-download"></i> {{ _('Télécharger le PDF') }}</a>
   <a class="btn btn-outline-secondary" href="{{ url_for('contracts.pdf', contract_id=c.id, inline=1) }}" target="_blank"><i class="bi bi-file-earmark-pdf"></i> {{ _('Ouvrir le PDF') }}</a>
+  {% if verso %}
+  <a class="btn btn-outline-primary" href="{{ url_for('contracts.pdf', contract_id=c.id, verso=1) }}"><i class="bi bi-files"></i> {{ _('PDF recto-verso') }}</a>
+  <a class="btn btn-outline-secondary" href="{{ url_for('contracts.view', contract_id=c.id) }}"><i class="bi bi-eye-slash"></i> {{ _('Masquer le verso') }}</a>
+  {% else %}
+  <a class="btn btn-outline-secondary" href="{{ url_for('contracts.view', contract_id=c.id, verso=1) }}"><i class="bi bi-files"></i> {{ _('Recto-verso (conditions générales)') }}</a>
+  {% endif %}
   <a class="btn btn-outline-secondary" href="{{ url_for('contracts.edit', contract_id=c.id) }}"><i class="bi bi-pencil"></i> {{ _('Modifier') }}</a>
   <a class="btn btn-outline-secondary" href="{{ url_for('contracts.duplicate', contract_id=c.id) }}"><i class="bi bi-copy"></i> {{ _('Dupliquer') }}</a>
   <a class="btn btn-outline-secondary" href="{{ url_for('engagements.create', contract_id=c.id) }}"><i class="bi bi-pen"></i> {{ _('Créer un engagement') }}</a>
@@ -54,5 +60,6 @@
 
 <div class="a4-wrapper">
   {% include "contracts/_sheet.html" %}
+  {% if verso %}{% include "conditions/_sheet.html" %}{% endif %}
 </div>
 {% endblock %}

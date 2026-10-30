@@ -376,4 +376,25 @@ AR = {
     "Le nom de l'agence est obligatoire.": "اسم الوكالة إجباري.",
     "Le fichier du logo n'est pas une image valide (JPG ou PNG).": "ملف الشعار ليس صورة صالحة (JPG أو PNG).",
     "Paramètres de l'agence enregistrés.": "تم حفظ إعدادات الوكالة.",
+
+    # ---------------------------------------------------------------- conditions générales
+    "Conditions générales": "الشروط العامة",
+    "Conditions générales de location": "الشروط العامة للكراء",
+    "Conditions générales enregistrées.": "تم حفظ الشروط العامة.",
+    "Document fixe à imprimer seul ou au verso des contrats.": "وثيقة ثابتة تطبع وحدها أو على ظهر العقود.",
+    "Les titres et les textes en français et en arabe sont obligatoires.": "العناوين والنصوص بالفرنسية والعربية إجبارية.",
+    "Masquer le verso": "إخفاء الوجه الخلفي",
+    "Mise en forme : « ## » au début d'une ligne pour un titre, « [x] » pour une case cochée, « - » pour une puce.":
+        "التنسيق: « ## » في بداية السطر لعنوان، « [x] » لخانة مؤشر عليها، « - » لنقطة.",
+    "Modifier le texte": "تعديل النص",
+    "Modifier les conditions générales": "تعديل الشروط العامة",
+    "PDF recto-verso": "PDF وجهان",
+    "Recto-verso (conditions générales)": "طباعة على الوجهين (الشروط العامة)",
+    "Remplacer le texte actuel par le texte par défaut ?": "استبدال النص الحالي بالنص الافتراضي؟",
+    "Texte en arabe": "النص بالعربية",
+    "Texte en français": "النص بالفرنسية",
+    "Texte par défaut": "النص الافتراضي",
+    "Texte par défaut des conditions générales rétabli.": "تمت استعادة النص الافتراضي للشروط العامة.",
+    "Titre en arabe": "العنوان بالعربية",
+    "Titre en français": "العنوان بالفرنسية",
 }

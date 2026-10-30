@@ -24,6 +24,7 @@ def create_app(config_class=Config):
     from .blueprints.engagements import bp as engagements_bp
     from .blueprints.settings import bp as settings_bp
     from .blueprints.api import bp as api_bp
+    from .blueprints.conditions import bp as conditions_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(clients_bp, url_prefix="/clients")
@@ -32,6 +33,7 @@ def create_app(config_class=Config):
     app.register_blueprint(engagements_bp, url_prefix="/engagements")
     app.register_blueprint(settings_bp, url_prefix="/parametres")
     app.register_blueprint(api_bp, url_prefix="/api")
+    app.register_blueprint(conditions_bp, url_prefix="/conditions")
 
     @app.template_filter("date_fr")
     def _date_fr(value):

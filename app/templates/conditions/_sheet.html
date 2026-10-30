@@ -1,0 +1,29 @@
+{# Feuille A4 des conditions générales (verso du contrat) : français à gauche, arabe à droite #}
+{% macro blocks(items) -%}
+  {% for kind, text in items %}
+    {% if kind == 'title' %}<div class="cg-title">▸ {{ text }}</div>
+    {% elif kind == 'check' %}<div class="cg-check"><span class="box">✓</span> {{ text }}</div>
+    {% elif kind == 'bullet' %}<div class="cg-bullet">• {{ text }}</div>
+    {% else %}<p class="cg-para">{{ text }}</p>{% endif %}
+  {% endfor %}
+{%- endmacro %}
+<div class="a4 a4-conditions" dir="ltr" lang="fr">
+  <div class="cg-head">
+    <div class="cg-brand">
+      {% if logo_url %}<img class="doc-logo" src="{{ logo_url }}" alt="{{ agency.name }}">
+      {% else %}<div class="agency-name">{{ agency.name }}</div>{% endif %}
+    </div>
+    <div class="cg-heading">{{ cg.title_fr }} / <span class="ar" dir="rtl">{{ cg.title_ar }}</span></div>
+  </div>
+  <div class="cg-columns">
+    <div class="cg-col" dir="ltr" lang="fr">{{ blocks(cg_fr) }}</div>
+    <div class="cg-col cg-col-ar ar" dir="rtl" lang="ar">{{ blocks(cg_ar) }}</div>
+  </div>
+  <div class="cg-sign">
+    <div>Lu et approuvé — signature du locataire</div>
+    <div class="ar" dir="rtl">قرأت ووافقت — توقيع المكتري</div>
+  </div>
+  <div class="doc-footer">
+    {{ agency.name }} — {{ agency.address }}{% if agency.city %}, {{ agency.city }}{% endif %}{% if agency.phone %} — Tél : {{ agency.phone }}{% endif %}
+  </div>
+</div>

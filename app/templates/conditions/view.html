@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Conditions générales') }}{% endblock %}
+{% block content %}
+<div class="page-header no-print">
+  <div>
+    <h1>{{ _('Conditions générales de location') }}</h1>
+    <div class="subtitle">{{ _('Document fixe à imprimer seul ou au verso des contrats.') }}</div>
+  </div>
+</div>
+<div class="doc-toolbar no-print">
+  <button class="btn btn-primary" type="button" data-print><i class="bi bi-printer"></i> {{ _('Imprimer (A4)') }}</button>
+  <a class="btn btn-outline-primary" href="{{ url_for('conditions.pdf') }}"><i class="bi bi-download"></i> {{ _('Télécharger le PDF') }}</a>
+  <a class="btn btn-outline-secondary" href="{{ url_for('conditions.pdf', inline=1) }}" target="_blank"><i class="bi bi-file-earmark-pdf"></i> {{ _('Ouvrir le PDF') }}</a>
+  <a class="btn btn-outline-secondary" href="{{ url_for('conditions.edit') }}"><i class="bi bi-pencil"></i> {{ _('Modifier le texte') }}</a>
+</div>
+<div class="a4-wrapper">
+  {% include "conditions/_sheet.html" %}
+</div>
+{% endblock %}

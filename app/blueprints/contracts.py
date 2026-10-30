@@ -10,6 +10,7 @@ from ..models import (
     CONTRACT_STATUSES, DOCUMENT_FLAGS, FUEL_LEVELS, PAYMENT_METHODS,
 )
 from ..pdf import pdf_response
+from .conditions import conditions_context
 from ..utils import (
     form_str, form_date, form_datetime, form_float, form_int, form_bool,
     next_number, rental_days, search_filter,
@@ -307,21 +308,26 @@ def create():
 @bp.route("/<int:contract_id>")
 def view(contract_id):
     c = db.session.get(Contract, contract_id) or abort(404)
+    verso = request.args.get("verso") == "1"
     return render_template(
-        "contracts/view.html", c=c, document_flags=DOCUMENT_FLAGS, fuel_levels=FUEL_LEVELS
+        "contracts/view.html", c=c, document_flags=DOCUMENT_FLAGS, fuel_levels=FUEL_LEVELS,
+        verso=verso, **(conditions_context() if verso else {}),
     )
 
 
 @bp.route("/<int:contract_id>/pdf")
 def pdf(contract_id):
     c = db.session.get(Contract, contract_id) or abort(404)
+    verso = request.args.get("verso") == "1"
     return pdf_response(
         "contracts/pdf.html",
-        f"Contrat-{c.number}.pdf",
+        f"Contrat-{c.number}{'-recto-verso' if verso else ''}.pdf",
         inline=request.args.get("inline") == "1",
         c=c,
         document_flags=DOCUMENT_FLAGS,
         fuel_levels=FUEL_LEVELS,
+        verso=verso,
+        **(conditions_context() if verso else {}),
     )
 
 

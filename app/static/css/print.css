@@ -11,9 +11,11 @@ html, body { background: #fff !important; margin: 0; padding: 0; }
   height: 296mm;
   margin: 0 !important;
   box-shadow: none !important;
-  page-break-after: avoid;
+  break-after: page;
+  page-break-after: always;
   overflow: hidden;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
 a { color: inherit !important; text-decoration: none !important; }
+.a4:last-child { break-after: auto; page-break-after: auto; }

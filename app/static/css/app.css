@@ -168,5 +168,23 @@ dl.info dd { margin-bottom: .6rem; }
 .a4-rtl { font-family: Arial, Tahoma, "Segoe UI", sans-serif; }
 .a4-rtl .engagement-body { font-size: 13pt; line-height: 2; }
 .a4-rtl .engagement-title { font-size: 17pt; }
+/* Conditions générales (verso du contrat) */
+.a4-conditions { font-size: 8.2pt; line-height: 1.35; display: flex; flex-direction: column; }
+.cg-head { display: flex; align-items: center; gap: 6mm; border-bottom: 2px solid #000; padding-bottom: 2mm; margin-bottom: 3mm; }
+.cg-brand { width: 45mm; flex-shrink: 0; }
+.cg-brand .doc-logo { max-height: 16mm; }
+.cg-heading { flex: 1; text-align: center; font-size: 14pt; font-weight: 800; border: 2px solid #000; border-radius: 3mm; padding: 1.5mm 3mm; }
+.cg-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; flex: 1; }
+.cg-col-ar { border-left: 1.5px solid #000; padding-left: 5mm; font-size: 8.8pt; }
+.cg-title { font-weight: 800; text-decoration: underline; margin: 2.2mm 0 1mm; }
+.cg-check, .cg-bullet { margin: .6mm 0; }
+.cg-check .box { margin: 0 1mm 0 0; }
+.cg-col-ar .cg-check .box { margin: 0 0 0 1mm; }
+.cg-para { margin: 0 0 1.2mm; text-align: justify; }
+.cg-sign { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; margin-top: 3mm; font-weight: 700; }
+.cg-sign > div { border: 1.5px solid #000; border-radius: 3mm; min-height: 18mm; padding: 1.5mm 2mm; text-align: center; }
+
 .engagement-body { white-space: pre-line; text-align: justify; line-height: 1.75; font-size: 11.5pt; margin: 8mm 0; }
 .engagement-title { text-align: center; font-size: 15pt; font-weight: 800; text-decoration: underline; margin: 10mm 0 6mm; }
+
+.a4 + .a4 { margin-top: 8mm; }

@@ -28,6 +28,7 @@ td { vertical-align: middle; padding: 0; }
 .terms td { font-size: 7.5pt; font-weight: bold; vertical-align: top; padding: 1mm 2mm; }
 .footer { border-top: 1.2pt solid #000; text-align: center; font-weight: bold; font-size: 8pt; padding-top: 1.5mm; margin-top: 2mm; }
 .cancel { color: #b00000; font-weight: bold; font-size: 11pt; }
+{% if verso %}{% include "conditions/_pdf_css.html" %}{% endif %}
 </style>
 </head>
 <body>
@@ -128,5 +129,9 @@ td { vertical-align: middle; padding: 0; }
   {{ agency.address }}{% if agency.city %}, {{ agency.city }}{% endif %}{% if agency.phone %} - Tél : {{ agency.phone }}{% endif %}{% if agency.email %} - {{ agency.email }}{% endif %}
   {% if agency.ice or agency.rc %}<br>{% if agency.ice %}ICE : {{ agency.ice }}{% endif %}{% if agency.rc %} · RC : {{ agency.rc }}{% endif %}{% if agency.tax_id %} · IF : {{ agency.tax_id }}{% endif %}{% if agency.patente %} · Patente : {{ agency.patente }}{% endif %}{% endif %}
 </div>
+{% if verso %}
+<pdf:nextpage />
+{% include "conditions/_pdf_body.html" %}
+{% endif %}
 </body>
 </html>

@@ -297,3 +297,24 @@ class Engagement(TimestampMixin, db.Model):
     vehicle = db.relationship("Vehicle")
     contract = db.relationship("Contract")
     source = db.relationship("Engagement", remote_side=[id], backref="copies")
+
+
+class GeneralConditions(TimestampMixin, db.Model):
+    """Conditions générales de location (verso du contrat), texte bilingue modifiable."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    title_fr = db.Column(db.String(160), nullable=False)
+    title_ar = db.Column(db.String(160), nullable=False)
+    body_fr = db.Column(db.Text, nullable=False)
+    body_ar = db.Column(db.Text, nullable=False)
+
+    @classmethod
+    def get(cls):
+        conditions = cls.query.first()
+        if conditions is None:
+            from .conditions import default_conditions
+
+            conditions = cls(**default_conditions(Agency.get().city))
+            db.session.add(conditions)
+            db.session.commit()
+        return conditions
