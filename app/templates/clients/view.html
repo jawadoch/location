@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% from "_macros.html" import contract_status, empty, delete_button %}
+{% block title %}{{ client.full_name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>{{ client.full_name }}</h1><div class="subtitle">Client depuis le {{ client.created_at|date_fr }}</div></div>
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-primary" href="{{ url_for('contracts.create', client_id=client.id) }}"><i class="bi bi-file-earmark-plus"></i> Nouveau contrat</a>
+    <a class="btn btn-outline-primary" href="{{ url_for('engagements.create', client_id=client.id) }}"><i class="bi bi-pen"></i> Nouvel engagement</a>
+    <a class="btn btn-outline-secondary" href="{{ url_for('clients.edit', client_id=client.id) }}"><i class="bi bi-pencil"></i> Modifier</a>
+    {{ delete_button(url_for('clients.delete', client_id=client.id), "Supprimer définitivement le client " ~ client.full_name ~ " ? Ses contrats et engagements restent dans l'historique.", label='Supprimer') }}
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header">Informations</div>
+      <div class="card-body">
+        <dl class="info mb-0">
+          <dt>Nationalité</dt><dd>{{ client.nationality or '—' }}</dd>
+          <dt>Date de naissance</dt><dd>{{ client.birth_date|date_fr or '—' }}</dd>
+          <dt>CIN</dt><dd>{{ client.cin or '—' }}{% if client.cin_valid_until %} <span class="text-muted small">(valable jusqu'au {{ client.cin_valid_until|date_fr }})</span>{% endif %}</dd>
+          <dt>Passeport</dt><dd>{{ client.passport_no or '—' }}{% if client.passport_issued_at %} <span class="text-muted small">délivré à {{ client.passport_issued_at }}</span>{% endif %}</dd>
+          <dt>Permis de conduire</dt><dd>{{ client.license_no or '—' }}{% if client.license_date %} <span class="text-muted small">du {{ client.license_date|date_fr }} à {{ client.license_place }}</span>{% endif %}</dd>
+          <dt>Adresse</dt><dd>{{ client.address or '—' }} {{ client.city or '' }}</dd>
+          <dt>Téléphone</dt><dd>{{ client.phone or '—' }}</dd>
+          <dt>E-mail</dt><dd>{{ client.email or '—' }}</dd>
+          {% if client.notes %}<dt>Notes</dt><dd>{{ client.notes }}</dd>{% endif %}
+        </dl>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8 d-flex flex-column gap-3">
+    <div class="card">
+      <div class="card-header">Contrats ({{ contracts|length }})</div>
+      <div class="table-responsive">
+        {% if contracts %}
+        <table class="table table-hover align-middle mb-0">
+          <thead><tr><th>N°</th><th>Véhicule</th><th>Période</th><th class="text-end">Montant</th><th>Statut</th><th></th></tr></thead>
+          <tbody>
+          {% for c in contracts %}
+            <tr>
+              <td><a class="fw-semibold" href="{{ url_for('contracts.view', contract_id=c.id) }}">{{ c.number }}</a></td>
+              <td>{{ c.vehicle_label }}<div class="small-muted">{{ c.vehicle_plate }}</div></td>
+              <td class="small">{{ c.start_at|date_fr }}<br>{{ c.end_at|date_fr }}</td>
+              <td class="text-end">{{ c.amount|money }}</td>
+              <td>{{ contract_status(c) }}</td>
+              <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('contracts.duplicate', contract_id=c.id) }}" title="Dupliquer"><i class="bi bi-copy"></i></a></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        {% else %}{{ empty('Aucun contrat pour ce client.') }}{% endif %}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">Engagements ({{ engagements|length }})</div>
+      <ul class="list-group list-group-flush">
+        {% for e in engagements %}
+          <li class="list-group-item d-flex justify-content-between">
+            <span><a class="fw-semibold" href="{{ url_for('engagements.view', engagement_id=e.id) }}">{{ e.number }}</a> · {{ e.title }}</span>
+            <span class="text-muted small">{{ e.doc_date|date_fr }}</span>
+          </li>
+        {% else %}
+          <li class="list-group-item text-muted small">Aucun engagement.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

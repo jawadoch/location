@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+{% set editing = e.id is not none %}
+<div class="page-header">
+  <div>
+    <h1>{{ title }}</h1>
+    <div class="subtitle">{% if editing %}N° {{ e.number }}{% else %}Le numéro sera généré automatiquement à l'enregistrement.{% endif %}</div>
+  </div>
+  <a class="btn btn-light" href="{{ url_for('engagements.view', engagement_id=e.id) if editing else (url_for('engagements.view', engagement_id=source.id) if source else url_for('engagements.index')) }}"><i class="bi bi-arrow-left"></i> Retour</a>
+</div>
+
+{% set tpl_data = {} %}
+{% for t in templates %}{% set _ = tpl_data.update({t.id|string: {'title': t.title, 'body': t.body}}) %}{% endfor %}
+<script type="application/json" id="templatesData">{{ tpl_data|tojson }}</script>
+
+<form method="post" id="engagementForm" action="{{ url_for('engagements.edit', engagement_id=e.id) if editing else url_for('engagements.create') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {% if source %}<input type="hidden" name="source_id" value="{{ source.id }}">{% endif %}
+  <input type="hidden" name="client_id" id="client_id" value="{{ e.client_id or '' }}">
+  <div class="row g-3">
+    <div class="col-xl-7">
+      <div class="card mb-3">
+        <div class="card-header"><i class="bi bi-journal-text"></i> Modèle et texte</div>
+        <div class="card-body">
+          <div class="row g-2 align-items-end mb-3">
+            <div class="col">
+              <label class="form-label" for="template_id">Modèle</label>
+              <select class="form-select" id="template_id" name="template_id">
+                <option value="">— Texte libre —</option>
+                {% for t in templates %}<option value="{{ t.id }}" {% if t.id == e.template_id %}selected{% endif %}>{{ t.name }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="col-auto"><button type="button" class="btn btn-outline-primary" id="applyTemplate"><i class="bi bi-arrow-down-square"></i> Appliquer le modèle</button></div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="title">Titre · العنوان <span class="text-danger">*</span></label>
+            <input class="form-control" id="title" name="title" dir="auto" value="{{ e.title or '' }}" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label" for="body_source">Texte · نص الالتزام <span class="text-danger">*</span></label>
+            <textarea class="form-control" id="body_source" name="body_source" rows="14" dir="auto" required>{{ e.body_source or '' }}</textarea>
+            <div class="form-text">Les variables <code>{{ '{{ client_nom }}' }}</code>… sont remplacées par les informations ci-contre à l'enregistrement. Vous pouvez aussi écrire directement le texte.</div>
+          </div>
+          <div class="d-flex flex-wrap gap-1">
+            {% for key, label in placeholders.items() %}
+              <button type="button" class="btn btn-sm btn-light border" data-insert="{{ key }}" data-target="body_source" title="{{ label }}">{{ key }}</button>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-5">
+      <div class="card mb-3">
+        <div class="card-header"><i class="bi bi-person"></i> Client · المكتري</div>
+        <div class="card-body">
+          <div class="autocomplete mb-2">
+            <input type="search" class="form-control" placeholder="Rechercher un client existant…" autocomplete="off"
+                   data-client-search data-url="{{ url_for('api.clients') }}" data-client-id="client_id" data-badge="clientBadge"
+                   data-fill='{"client_name":"full_name","client_cin":"cin","client_passport":"passport_no","client_license_no":"license_no","client_address":"address","client_phone":"phone","client_nationality":"nationality"}'>
+          </div>
+          <div id="clientBadge" class="alert alert-success py-2 small {% if not e.client_id %}d-none{% endif %}">
+            {% if e.client_id %}<i class="bi bi-person-check"></i> Client existant : {{ e.client_name }}
+              <button type="button" class="btn btn-link btn-sm p-0 ms-2" onclick="document.getElementById('client_id').value='';this.parentNode.classList.add('d-none')">Délier</button>{% endif %}
+          </div>
+          <div class="row g-2">
+            {{ field('client_name', 'Nom et prénom · الاسم الكامل', e.client_name, required=true, cls='col-12') }}
+            {{ field('client_cin', 'N° CIN · رقم البطاقة الوطنية', e.client_cin, cls='col-6') }}
+            {{ field('client_passport', 'N° passeport · رقم جواز السفر', e.client_passport, cls='col-6') }}
+            {{ field('client_license_no', 'N° permis · رقم رخصة السياقة', e.client_license_no, cls='col-6') }}
+            {{ field('client_nationality', 'Nationalité · الجنسية', e.client_nationality, cls='col-6') }}
+            {{ field('client_phone', 'Téléphone · الهاتف', e.client_phone, cls='col-6') }}
+            {{ field('client_address', 'Adresse · العنوان', e.client_address, cls='col-6') }}
+          </div>
+        </div>
+      </div>
+      <div class="card mb-3">
+        <div class="card-header"><i class="bi bi-car-front"></i> Location concernée · الكراء المعني</div>
+        <div class="card-body row g-2">
+          {{ field('contract_number', 'N° de contrat lié · رقم العقد (facultatif)', e.contract_number, cls='col-12', attrs='placeholder="' ~ agency.contract_prefix ~ '-2026-0001"') }}
+          <div class="col-12">
+            <label class="form-label" for="vehicle_id">Véhicule du parc · السيارة</label>
+            <select class="form-select" id="vehicle_id" name="vehicle_id">
+              <option value="">—</option>
+              {% for v in vehicles %}<option value="{{ v.id }}" data-label="{{ v.label }}" data-plate="{{ v.plate }}" {% if v.id == e.vehicle_id %}selected{% endif %}>{{ v.label }} — {{ v.plate }}</option>{% endfor %}
+            </select>
+          </div>
+          {{ field('vehicle_label', 'Véhicule · نوع السيارة', e.vehicle_label, cls='col-6') }}
+          {{ field('vehicle_plate', 'Immatriculation · رقم التسجيل', e.vehicle_plate, cls='col-6') }}
+          {{ field('start_date', 'Date de début · من', e.start_date|iso, type='date', cls='col-6') }}
+          {{ field('end_date', 'Date de fin · إلى', e.end_date|iso, type='date', cls='col-6') }}
+          {{ field('amount', 'Montant · المبلغ (' ~ agency.currency ~ ')', e.amount, type='number', cls='col-6', attrs='step="0.01" min="0"') }}
+        </div>
+      </div>
+      <div class="card mb-3">
+        <div class="card-body row g-2">
+          {{ field('doc_date', 'Date · التاريخ', e.doc_date|iso, type='date', cls='col-6') }}
+          {{ field('place', 'Fait à · حرر ب', e.place, cls='col-6') }}
+        </div>
+        <div class="card-footer bg-white">
+          <button class="btn btn-primary w-100 btn-lg"><i class="bi bi-check-lg"></i> {{ 'Enregistrer les modifications' if editing else 'Enregistrer l\'engagement' }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}

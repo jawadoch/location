@@ -1,0 +1,57 @@
+{% macro pager(pagination, endpoint) -%}
+  {% if pagination.pages > 1 %}
+  <nav class="mt-3" aria-label="Pagination">
+    <ul class="pagination pagination-sm justify-content-center mb-0">
+      {% set args = request.args.to_dict() %}
+      {% if pagination.has_prev %}
+        {% set _ = args.update({'page': pagination.prev_num}) %}
+        <li class="page-item"><a class="page-link" href="{{ url_for(endpoint, **args) }}">&laquo;</a></li>
+      {% endif %}
+      {% for p in pagination.iter_pages() %}
+        {% if p %}
+          {% set _ = args.update({'page': p}) %}
+          <li class="page-item {% if p == pagination.page %}active{% endif %}"><a class="page-link" href="{{ url_for(endpoint, **args) }}">{{ p }}</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">…</span></li>
+        {% endif %}
+      {% endfor %}
+      {% if pagination.has_next %}
+        {% set _ = args.update({'page': pagination.next_num}) %}
+        <li class="page-item"><a class="page-link" href="{{ url_for(endpoint, **args) }}">&raquo;</a></li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+{%- endmacro %}
+
+{% macro contract_status(c) -%}
+  {% set colors = {'en_cours': 'primary', 'termine': 'success', 'annule': 'secondary'} %}
+  <span class="badge text-bg-{{ colors.get(c.status, 'light') }}">{{ c.status_label }}</span>
+{%- endmacro %}
+
+{% macro vehicle_status(v) -%}
+  {% if v.status == 'disponible' and v.is_rented %}
+    <span class="badge text-bg-warning">Loué</span>
+  {% else %}
+    {% set colors = {'disponible': 'success', 'maintenance': 'warning', 'hors_service': 'secondary'} %}
+    <span class="badge text-bg-{{ colors.get(v.status, 'light') }}">{{ v.status_label }}</span>
+  {% endif %}
+{%- endmacro %}
+
+{% macro field(name, label, value='', type='text', required=false, cls='col-md-6', attrs='') -%}
+  <div class="{{ cls }}">
+    <label class="form-label" for="{{ name }}">{{ label }}{% if required %} <span class="text-danger">*</span>{% endif %}</label>
+    <input class="form-control" type="{{ type }}" id="{{ name }}" name="{{ name }}" value="{{ value if value is not none else '' }}" {% if required %}required{% endif %} {{ attrs|safe }}>
+  </div>
+{%- endmacro %}
+
+{% macro delete_button(url, message, label='', small=false) -%}
+  <form method="post" action="{{ url }}" class="d-inline" data-confirm="{{ message }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn {{ 'btn-sm' if small }} btn-outline-danger" title="Supprimer"><i class="bi bi-trash"></i>{% if label %} {{ label }}{% endif %}</button>
+  </form>
+{%- endmacro %}
+
+{% macro empty(message, icon='inbox') -%}
+  <div class="empty-state"><i class="bi bi-{{ icon }}"></i><p>{{ message }}</p></div>
+{%- endmacro %}

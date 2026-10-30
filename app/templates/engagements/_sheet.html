@@ -1,0 +1,62 @@
+{# Feuille A4 de l'engagement : en arabe (droite à gauche) si le texte est en arabe #}
+{% set ar = e.body_source is arabic %}
+{% set L = {
+  'number': 'التزام رقم' if ar else 'Engagement N°',
+  'contract': 'العقد رقم' if ar else 'Contrat N°',
+  'data': 'بيانات المكتري والسيارة' if ar else 'Informations du locataire et du véhicule',
+  'name': 'الاسم الكامل' if ar else 'Nom et prénom',
+  'cin': 'رقم البطاقة الوطنية' if ar else 'N° CIN',
+  'passport': 'رقم جواز السفر' if ar else 'N° passeport',
+  'license': 'رقم رخصة السياقة' if ar else 'N° permis',
+  'phone': 'الهاتف' if ar else 'Téléphone',
+  'vehicle': 'نوع السيارة' if ar else 'Véhicule',
+  'plate': 'رقم التسجيل' if ar else 'Immatriculation',
+  'period': 'مدة الكراء' if ar else 'Période',
+  'from': 'من' if ar else 'du',
+  'to': 'إلى' if ar else 'au',
+  'done': 'حرر ب' if ar else 'Fait à',
+  'on': 'بتاريخ' if ar else 'le',
+  'client_sign': 'توقيع المكتري' if ar else 'Signature du client',
+  'client_hint': 'مسبوقا بعبارة: قرأت ووافقت' if ar else '(précédée de la mention « lu et approuvé »)',
+  'agency_sign': 'طابع وتوقيع الوكالة' if ar else 'Cachet et signature de',
+  'phone_short': 'الهاتف' if ar else 'Tél',
+} %}
+<div class="a4 {% if ar %}a4-rtl{% endif %}" id="document" dir="{{ 'rtl' if ar else 'ltr' }}" lang="{{ 'ar' if ar else 'fr' }}">
+  <div class="eng-head">
+    <div class="eng-brand" dir="ltr">
+      {% if logo_url %}<img class="doc-logo" src="{{ logo_url }}" alt="{{ agency.name }}">
+      {% else %}<div class="agency-name">{{ agency.name }}</div><div style="font-size:9pt">{{ agency.slogan }}</div>{% endif %}
+    </div>
+    <div class="eng-number">
+      {% if ar and agency.name_ar %}<div class="fw-bold">{{ agency.name_ar }}</div>{% endif %}
+      <div>{{ L.number }}</div>
+      <div class="num" dir="ltr">{{ e.number }}</div>
+      {% if e.contract_number %}<div>{{ L.contract }} <span dir="ltr">{{ e.contract_number }}</span></div>{% endif %}
+    </div>
+  </div>
+
+  <div class="engagement-title">{{ e.title }}</div>
+
+  <table class="eng-data">
+    <caption>{{ L.data }}</caption>
+    <tr><th>{{ L.name }}</th><td dir="ltr">{{ e.client_name }}</td><th>{{ L.phone }}</th><td dir="ltr">{{ e.client_phone }}</td></tr>
+    <tr><th>{{ L.cin }}</th><td dir="ltr">{{ e.client_cin }}</td><th>{{ L.passport }}</th><td dir="ltr">{{ e.client_passport }}</td></tr>
+    <tr><th>{{ L.license }}</th><td dir="ltr">{{ e.client_license_no }}</td><th>{{ L.vehicle }}</th><td dir="ltr">{{ e.vehicle_label }}</td></tr>
+    <tr><th>{{ L.plate }}</th><td dir="ltr">{{ e.vehicle_plate }}</td><th>{{ L.period }}</th>
+      <td>{% if e.start_date or e.end_date %}{{ L['from'] }} <span dir="ltr">{{ e.start_date|date_fr }}</span> {{ L.to }} <span dir="ltr">{{ e.end_date|date_fr }}</span>{% endif %}</td></tr>
+  </table>
+
+  <div class="engagement-body">{{ e.body }}</div>
+
+  <p class="eng-place">{{ L.done }} {{ e.place or agency.city }}{{ '،' if ar else ',' }} {{ L.on }} <span dir="ltr">{{ e.doc_date|date_fr }}</span></p>
+
+  <div class="eng-signs">
+    <div class="sign-box" style="min-height:35mm">{{ L.client_sign }}<br><span style="font-weight:400">{{ L.client_hint }}</span></div>
+    <div class="sign-box" style="min-height:35mm">{{ L.agency_sign }}<br>{{ agency.name }}</div>
+  </div>
+
+  <div class="doc-footer" style="margin-top:15mm" dir="ltr">
+    {{ agency.name }} — {{ agency.address }}{% if agency.city %}, {{ agency.city }}{% endif %}{% if agency.phone %} — Tél : {{ agency.phone }}{% endif %}
+    {% if agency.ice %}<br>ICE : {{ agency.ice }}{% if agency.rc %} · RC : {{ agency.rc }}{% endif %}{% endif %}
+  </div>
+</div>

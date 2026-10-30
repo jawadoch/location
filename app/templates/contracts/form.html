@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+{% set editing = c.id is not none %}
+<div class="page-header">
+  <div>
+    <h1>{{ title }}</h1>
+    <div class="subtitle">{% if editing %}N° {{ c.number }}{% else %}Le numéro sera généré automatiquement à l'enregistrement.{% endif %}</div>
+  </div>
+  <a class="btn btn-light" href="{{ url_for('contracts.view', contract_id=c.id) if editing else (url_for('contracts.view', contract_id=source.id) if source else url_for('contracts.index')) }}"><i class="bi bi-arrow-left"></i> Retour</a>
+</div>
+
+<form method="post" id="contractForm" action="{{ url_for('contracts.edit', contract_id=c.id) if editing else url_for('contracts.create') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {% if source %}<input type="hidden" name="source_id" value="{{ source.id }}">{% endif %}
+  <input type="hidden" name="client_id" id="client_id" value="{{ c.client_id or '' }}">
+
+  <div class="row g-3">
+    <div class="col-xl-8">
+      <!-- Locataire -->
+      <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <span><i class="bi bi-person"></i> Locataire <span class="text-muted fw-normal">· المكتري</span></span>
+          <a class="small" href="{{ url_for('clients.index') }}" target="_blank">Gérer les clients</a>
+        </div>
+        <div class="card-body">
+          <div class="autocomplete mb-2">
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-search"></i></span>
+              <input type="search" class="form-control" placeholder="Rechercher un client existant (nom, CIN, passeport, téléphone) pour préremplir…"
+                     autocomplete="off" data-client-search data-url="{{ url_for('api.clients') }}" data-client-id="client_id" data-badge="clientBadge"
+                     data-fill='{"client_last_name":"last_name","client_first_name":"first_name","client_nationality":"nationality","client_birth_date":"birth_date","client_cin":"cin","client_passport":"passport_no","client_passport_issued_at":"passport_issued_at","client_license_no":"license_no","client_license_date":"license_date","client_license_place":"license_place","client_address":"address","client_phone":"phone"}'>
+            </div>
+          </div>
+          <div id="clientBadge" class="alert alert-success py-2 small {% if not c.client_id %}d-none{% endif %}">
+            {% if c.client_id %}<i class="bi bi-person-check"></i> Client existant : {{ c.client_name }}
+              <button type="button" class="btn btn-link btn-sm p-0 ms-2" onclick="document.getElementById('client_id').value='';this.parentNode.classList.add('d-none')">Délier</button>{% endif %}
+          </div>
+          <p class="small text-muted mb-3">Si aucun client n'est sélectionné, la fiche est retrouvée par CIN / passeport ou créée automatiquement.</p>
+          <div class="row g-3">
+            {{ field('client_last_name', 'Nom', c.client_last_name, required=true, cls='col-md-4') }}
+            {{ field('client_first_name', 'Prénom', c.client_first_name, cls='col-md-4') }}
+            {{ field('client_nationality', 'Nationalité', c.client_nationality, cls='col-md-4') }}
+            {{ field('client_birth_date', 'Date de naissance', c.client_birth_date|iso, type='date', cls='col-md-4') }}
+            {{ field('client_cin', 'N° CIN', c.client_cin, cls='col-md-4') }}
+            {{ field('client_phone', 'GSM', c.client_phone, type='tel', cls='col-md-4') }}
+            {{ field('client_passport', 'N° passeport', c.client_passport, cls='col-md-4') }}
+            {{ field('client_passport_issued_at', 'Passeport délivré à', c.client_passport_issued_at, cls='col-md-4') }}
+            <div class="col-md-4"></div>
+            {{ field('client_license_no', 'N° permis de conduire', c.client_license_no, required=true, cls='col-md-4') }}
+            {{ field('client_license_date', 'Permis délivré le', c.client_license_date|iso, type='date', cls='col-md-4') }}
+            {{ field('client_license_place', 'Permis délivré à', c.client_license_place, cls='col-md-4') }}
+            {{ field('client_address', 'Adresse au Maroc', c.client_address, cls='col-12') }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Autre conducteur -->
+      <div class="card mb-3">
+        <div class="card-header">
+          <a class="text-reset text-decoration-none d-flex justify-content-between" data-bs-toggle="collapse" href="#driver2" role="button" aria-expanded="{{ 'true' if c.driver2_name else 'false' }}">
+            <span><i class="bi bi-person-plus"></i> Autre conducteur <span class="text-muted fw-normal">(facultatif)</span></span><i class="bi bi-chevron-down"></i>
+          </a>
+        </div>
+        <div class="collapse {% if c.driver2_name %}show{% endif %}" id="driver2">
+          <div class="card-body row g-3">
+            {{ field('driver2_name', 'Nom et prénom', c.driver2_name, cls='col-md-6') }}
+            {{ field('driver2_license_no', 'N° permis', c.driver2_license_no, cls='col-md-6') }}
+            {{ field('driver2_license_date', 'Permis délivré le', c.driver2_license_date|iso, type='date', cls='col-md-6') }}
+            {{ field('driver2_license_place', 'Permis délivré à', c.driver2_license_place, cls='col-md-6') }}
+            {{ field('driver2_cin', 'N° CIN', c.driver2_cin, cls='col-md-6') }}
+            {{ field('driver2_cin_date', 'CIN du', c.driver2_cin_date|iso, type='date', cls='col-md-6') }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Véhicule et période -->
+      <div class="card mb-3">
+        <div class="card-header"><i class="bi bi-car-front"></i> Véhicule et période</div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-12">
+              <label class="form-label" for="vehicle_id">Véhicule <span class="text-danger">*</span></label>
+              <select class="form-select" id="vehicle_id" name="vehicle_id" required>
+                <option value="">— Choisir un véhicule —</option>
+                {% for v in vehicles %}
+                  {% set unavailable = v.status != 'disponible' and v.id != c.vehicle_id %}
+                  <option value="{{ v.id }}" data-rate="{{ v.daily_rate }}" data-km="{{ v.mileage or '' }}"
+                          {% if v.id == c.vehicle_id %}selected{% endif %} {% if unavailable %}disabled{% endif %}>
+                    {{ v.label }} — {{ v.plate }} — {{ v.daily_rate|money }}/jour{% if unavailable %} ({{ v.status_label }}){% elif v.is_rented and v.id != c.vehicle_id %} (actuellement loué){% endif %}
+                  </option>
+                {% endfor %}
+              </select>
+              {% if not vehicles %}<div class="form-text text-danger">Aucun véhicule : <a href="{{ url_for('vehicles.create') }}">ajoutez-en un</a>.</div>{% endif %}
+              {% if editing and c.vehicle_plate %}<div class="form-text">Véhicule enregistré dans ce contrat : {{ c.vehicle_label }} ({{ c.vehicle_plate }})</div>{% endif %}
+            </div>
+            {{ field('start_at', 'Départ (date et heure)', c.start_at|iso(true), type='datetime-local', required=true, cls='col-md-6') }}
+            {{ field('end_at', 'Retour prévu (date et heure)', c.end_at|iso(true), type='datetime-local', required=true, cls='col-md-6') }}
+            <div class="col-12"><div id="datesWarning" class="alert alert-warning py-2 small d-none mb-0">La date de retour doit être postérieure au départ.</div></div>
+            {{ field('prolongation', 'Prolongation', c.prolongation, cls='col-md-4', attrs='placeholder="ex : +2 jours jusqu\'au 12/11"') }}
+            {{ field('pickup_place', 'Lieu de livraison', c.pickup_place, cls='col-md-4', attrs='placeholder="Agence"') }}
+            {{ field('return_place', 'Lieu de retour', c.return_place, cls='col-md-4', attrs='placeholder="Agence"') }}
+            {{ field('km_start', 'Kilométrage départ', c.km_start, type='number', cls='col-md-3', attrs='min="0"') }}
+            {{ field('km_end', 'Kilométrage retour', c.km_end, type='number', cls='col-md-3', attrs='min="0"') }}
+            <div class="col-md-3">
+              <label class="form-label" for="fuel_level">Carburant</label>
+              <select class="form-select" id="fuel_level" name="fuel_level">
+                {% for f in fuel_levels %}<option {% if f == c.fuel_level %}selected{% endif %}>{{ f }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+              <div class="form-check form-switch mb-2">
+                <input class="form-check-input" type="checkbox" id="washing" name="washing" value="1" {% if c.washing %}checked{% endif %}>
+                <label class="form-check-label" for="washing">Lavage effectué</label>
+              </div>
+            </div>
+            {{ field('accessories', 'Accessoires / état du véhicule', c.accessories, cls='col-12', attrs='placeholder="Roue de secours, cric, triangle, rayure portière AR gauche…"') }}
+            <div class="col-12">
+              <label class="form-label d-block">Papiers du véhicule remis <span class="text-muted">· أوراق السيارة</span></label>
+              {% for flag, label, label_ar in document_flags %}
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="{{ flag }}" name="{{ flag }}" value="1" {% if c[flag] %}checked{% endif %}>
+                  <label class="form-check-label" for="{{ flag }}">{{ label }}</label>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Véhicule changé -->
+      <div class="card mb-3">
+        <div class="card-header">
+          <a class="text-reset text-decoration-none d-flex justify-content-between" data-bs-toggle="collapse" href="#changed" role="button">
+            <span><i class="bi bi-arrow-left-right"></i> Véhicule changé <span class="text-muted fw-normal">(en cours de location)</span></span><i class="bi bi-chevron-down"></i>
+          </a>
+        </div>
+        <div class="collapse {% if c.changed_plate %}show{% endif %}" id="changed">
+          <div class="card-body row g-3">
+            {{ field('changed_brand', 'Marque', c.changed_brand, cls='col-md-4') }}
+            {{ field('changed_plate', 'Matricule', c.changed_plate, cls='col-md-4') }}
+            {{ field('changed_date', 'Date de changement', c.changed_date|iso, type='date', cls='col-md-4') }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Montants -->
+    <div class="col-xl-4">
+      <div class="card mb-3 position-sticky" style="top: 80px;">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span><i class="bi bi-cash-coin"></i> Tarif et paiement</span>
+          <button type="button" class="btn btn-sm btn-light" id="recalc" title="Recalculer jours et montant"><i class="bi bi-calculator"></i> Recalculer</button>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            {{ field('daily_rate', 'Tarif / jour (' ~ agency.currency ~ ')', c.daily_rate, type='number', cls='col-6', attrs='step="0.01" min="0"') }}
+            {{ field('days', 'Nombre de jours', c.days, type='number', cls='col-6', attrs='min="1"') }}
+            {{ field('amount', 'Montant total', c.amount, type='number', cls='col-12', attrs='step="0.01" min="0"') }}
+            {{ field('advance', 'Avance versée', c.advance, type='number', cls='col-6', attrs='step="0.01" min="0"') }}
+            {{ field('caution', 'Caution', c.caution, type='number', cls='col-6', attrs='step="0.01" min="0"') }}
+            <div class="col-12">
+              <label class="form-label" for="payment_method">Mode de paiement</label>
+              <select class="form-select" id="payment_method" name="payment_method">
+                {% for p in payment_methods %}<option {% if p == c.payment_method %}selected{% endif %}>{{ p }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="col-12">
+              <div class="amount-box d-flex justify-content-between align-items-center">
+                <span>Reste à payer</span>
+                <span><span class="remaining" id="remainingDisplay">0,00</span> {{ agency.currency }}</span>
+              </div>
+            </div>
+            {% if editing %}
+            <div class="col-12">
+              <label class="form-label" for="status">Statut</label>
+              <select class="form-select" id="status" name="status">
+                {% for key, label in statuses.items() %}<option value="{{ key }}" {% if key == c.status %}selected{% endif %}>{{ label }}</option>{% endfor %}
+              </select>
+            </div>
+            {% endif %}
+            <div class="col-12">
+              <label class="form-label" for="notes">Notes internes</label>
+              <textarea class="form-control" id="notes" name="notes" rows="2">{{ c.notes or '' }}</textarea>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer bg-white">
+          <button class="btn btn-primary w-100 btn-lg"><i class="bi bi-check-lg"></i> {{ 'Enregistrer les modifications' if editing else 'Enregistrer le contrat' }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}

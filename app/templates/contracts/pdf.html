@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<style>
+{{ pdf_font_css|safe }}
+@page { size: a4 portrait; margin: 9mm 10mm 9mm 10mm; }
+body { font-size: 9pt; color: #000; }
+table { width: 100%; }
+td { vertical-align: middle; padding: 0; }
+.head td { padding: 1mm; }
+.agency { font-size: 16pt; font-weight: bold; }
+.title { border: 1.5pt solid #000; text-align: center; padding: 2mm; }
+.title .ar { font-size: 16pt; font-weight: bold; }
+.title .fr { font-size: 11pt; font-weight: bold; }
+.num { font-size: 13pt; font-weight: bold; }
+.rule { border-bottom: 1.5pt solid #000; height: 1mm; }
+.papers td { font-size: 8.5pt; font-weight: bold; text-align: center; padding: 2mm 0; }
+.block { border: 1.2pt solid #000; margin-bottom: 2.5mm; }
+.block-title td { font-weight: bold; font-size: 10.5pt; border-bottom: 1pt solid #000; padding: 1mm 2mm; }
+.r td { border-bottom: 0.5pt dotted #888; padding: 1.1mm 2mm; font-size: 8.5pt; }
+.r td.v { font-weight: bold; text-align: center; font-size: 9pt; }
+.ar { text-align: right; }
+.pill td { padding: 0.6mm 0; }
+.pl { border: 1pt solid #000; text-align: center; font-size: 7.5pt; padding: 0.8mm; }
+.pv { border: 1pt solid #000; text-align: center; font-weight: bold; font-size: 9pt; padding: 1.6mm; }
+.sign td { border: 1.2pt solid #000; height: 24mm; vertical-align: top; text-align: center; font-weight: bold; font-size: 8pt; padding: 1.5mm; }
+.terms td { font-size: 7.5pt; font-weight: bold; vertical-align: top; padding: 1mm 2mm; }
+.footer { border-top: 1.2pt solid #000; text-align: center; font-weight: bold; font-size: 8pt; padding-top: 1.5mm; margin-top: 2mm; }
+.cancel { color: #b00000; font-weight: bold; font-size: 11pt; }
+</style>
+</head>
+<body>
+{% macro row(label, value, label_ar='') -%}
+  <tr class="r"><td width="38%">{{ label }}</td><td class="v">{{ value if value else '' }}</td><td width="27%" class="ar">{% if pdf_arabic %}{{ label_ar }}{% endif %}</td></tr>
+{%- endmacro %}
+{% macro pill(fr, ar, value) -%}
+  <table class="pill"><tr>
+    <td width="40%" class="pl">{% if pdf_arabic %}{{ ar }}<br>{% endif %}{{ fr }}</td>
+    <td width="3%"></td>
+    <td class="pv">{{ value if value else '' }}</td>
+  </tr></table>
+{%- endmacro %}
+
+<table class="head"><tr>
+  <td width="28%">{% if logo_file %}<img src="{{ logo_file }}" width="150" height="55">{% else %}<div class="agency">{{ agency.name }}</div><div>{{ agency.slogan }}</div>{% endif %}</td>
+  <td width="44%"><div class="title">{% if pdf_arabic %}<div class="ar" style="text-align:center">عقد تأجير سيارة</div>{% endif %}<div class="fr">CONTRAT DE LOCATION DE VOITURE</div></div></td>
+  <td width="28%" style="text-align:right">Contrat N°<br><span class="num">{{ c.number }}</span>
+    {% if pdf_arabic and agency.name_ar %}<br>{{ agency.name_ar }}{% endif %}
+    {% if c.status == 'annule' %}<br><span class="cancel">ANNULÉ</span>{% endif %}</td>
+</tr></table>
+<div class="rule"></div>
+
+<table class="papers"><tr>
+  {% for flag, label, label_ar in document_flags %}
+    <td>{{ label }} : [{{ 'X' if c[flag] else '  ' }}]</td>
+  {% endfor %}
+</tr></table>
+
+<table><tr>
+  <td width="57%" style="vertical-align:top; padding-right:3mm">
+    <table class="block" width="100%">
+      <tr class="block-title"><td width="38%">Locataire</td><td width="35%"></td><td width="27%" class="ar">{% if pdf_arabic %}المكتري{% endif %}</td></tr>
+      {{ row('Nom et Prénom :', c.client_name, 'الإسم والنسب') }}
+      {{ row('Nationalité :', c.client_nationality, 'الجنسية') }}
+      {{ row('Date de naissance :', c.client_birth_date|date_fr, 'تاريخ الازدياد') }}
+      {{ row('Passeport N° :', c.client_passport, 'رقم جواز السفر') }}
+      {{ row('Délivré à :', c.client_passport_issued_at, 'صدر في') }}
+      {{ row('CIN N° :', c.client_cin, 'رقم البطاقة الوطنية') }}
+      {{ row('Permis de conduire N° :', c.client_license_no, 'رقم رخصة السياقة') }}
+      {{ row('Délivré le :', (c.client_license_date|date_fr) ~ ((' à ' ~ c.client_license_place) if c.client_license_place else ''), 'صدر في') }}
+      {{ row('Adresse au Maroc :', c.client_address, 'عنوان المغرب') }}
+      {{ row('GSM :', c.client_phone, 'الهاتف') }}
+    </table>
+    <table class="block" width="100%">
+      <tr class="block-title"><td width="38%">Autre conducteur</td><td width="35%"></td><td width="27%" class="ar">{% if pdf_arabic %}سائق آخر{% endif %}</td></tr>
+      {{ row('Nom et Prénom :', c.driver2_name) }}
+      {{ row('Permis N° :', c.driver2_license_no) }}
+      {{ row('Délivré le :', (c.driver2_license_date|date_fr) ~ ((' à ' ~ c.driver2_license_place) if c.driver2_license_place else '')) }}
+      {{ row('CIN N° :', (c.driver2_cin or '') ~ ((' du ' ~ (c.driver2_cin_date|date_fr)) if c.driver2_cin_date else '')) }}
+    </table>
+    <table class="block" width="100%">
+      <tr class="block-title"><td width="38%">Véhicule changé</td><td width="35%"></td><td width="27%" class="ar">{% if pdf_arabic %}استبدال السيارة{% endif %}</td></tr>
+      {{ row('Marque :', c.changed_brand, 'النوع') }}
+      {{ row('Matricule :', c.changed_plate, 'الترقيم') }}
+      {{ row('Date de changement :', c.changed_date|date_fr, 'تاريخ الاستبدال') }}
+    </table>
+  </td>
+  <td width="43%" style="vertical-align:top">
+    {{ pill('Marque de véhicule', 'نوع السيارة', c.vehicle_label) }}
+    {{ pill('Immatriculation', 'رقم اللوحة', c.vehicle_plate) }}
+    {{ pill('Date de départ', 'تاريخ المغادرة', c.start_at.strftime('%d/%m/%Y')) }}
+    {{ pill('Date de retour', 'تاريخ العودة', c.end_at.strftime('%d/%m/%Y') ~ ' à ' ~ c.end_at.strftime('%H:%M')) }}
+    {{ pill('Prolongation', 'التمديد', c.prolongation) }}
+    {{ pill('Kilométrage de départ', 'الكيلومترات عند المغادرة', c.km_start) }}
+    {{ pill('Kilométrage de retour', 'الكيلومترات عند العودة', c.km_end) }}
+    {{ pill('Nombre de jours', 'عدد الأيام', c.days ~ ' x ' ~ (c.daily_rate|money)) }}
+    {{ pill('Heure de sortie', 'ساعة التسليم', c.start_at.strftime('%H:%M')) }}
+    {{ pill('Montant', 'الثمن', c.amount|money) }}
+    {{ pill('Avance', 'تسبيق', c.advance|money) }}
+    {{ pill('Reste', 'الباقي', c.remaining|money) }}
+    {{ pill('Caution', 'الضمانة', c.caution|money if c.caution else '') }}
+    {{ pill('Carburant / Lavage', 'الوقود / الغسل', c.fuel_level ~ ' / ' ~ ('Oui' if c.washing else 'Non')) }}
+    {{ pill('Accessoires', 'لوازم', c.accessories) }}
+  </td>
+</tr></table>
+
+<table style="margin-top:2mm"><tr>
+  <td width="36%" style="padding-right:2mm"><table class="pill"><tr><td width="30%" class="pv">Date</td><td width="3%"></td><td class="pv">{{ c.created_at.strftime("%d/%m/%Y") if c.created_at else "" }}</td></tr></table></td>
+  <td width="22%"></td>
+  <td width="42%" style="padding-left:2mm"><table class="pill"><tr><td class="pv">Signature du client</td></tr></table></td>
+</tr></table>
+<table class="sign" style="margin-top:1mm"><tr>
+  <td width="34%">Cachet et signature responsable de<br>{{ agency.name }}</td>
+  <td width="2%" style="border:0"></td>
+  <td width="20%">{% if pdf_arabic %}بصمة المكتري<br>{% endif %}Empreinte du locataire</td>
+  <td width="2%" style="border:0"></td>
+  <td width="21%">DÉPART</td>
+  <td width="21%">RETOUR</td>
+</tr></table>
+
+<table class="terms" style="margin-top:2mm"><tr>
+  <td width="50%" style="border-right:1.2pt solid #000">{{ agency.contract_terms }}</td>
+  <td width="50%" class="ar">{% if pdf_arabic %}{{ agency.contract_terms_ar }}{% endif %}</td>
+</tr></table>
+
+<div class="footer">
+  {{ agency.address }}{% if agency.city %}, {{ agency.city }}{% endif %}{% if agency.phone %} - Tél : {{ agency.phone }}{% endif %}{% if agency.email %} - {{ agency.email }}{% endif %}
+  {% if agency.ice or agency.rc %}<br>{% if agency.ice %}ICE : {{ agency.ice }}{% endif %}{% if agency.rc %} · RC : {{ agency.rc }}{% endif %}{% if agency.tax_id %} · IF : {{ agency.tax_id }}{% endif %}{% if agency.patente %} · Patente : {{ agency.patente }}{% endif %}{% endif %}
+</div>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+{% set ar = (e.body_source is arabic) and pdf_arabic %}
+{% set align = 'right' if ar else 'left' %}
+<style>
+{{ pdf_font_css|safe }}
+@page { size: a4 portrait; margin: 14mm 16mm 14mm 16mm; }
+body { font-size: 11pt; color: #000; }
+table { width: 100%; }
+td { vertical-align: top; }
+.agency { font-size: 16pt; font-weight: bold; }
+.small { font-size: 9pt; }
+.num { font-size: 13pt; font-weight: bold; }
+.rule { border-bottom: 1.5pt solid #000; margin: 2mm 0 5mm 0; }
+h1 { text-align: center; font-size: {{ '17pt' if ar else '15pt' }}; text-decoration: underline; margin: 4mm 0 5mm 0; }
+.cap { font-weight: bold; text-align: {{ align }}; margin-bottom: 1.5mm; }
+.data td { border: 0.8pt solid #000; padding: 1.5mm 2mm; font-size: 10pt; vertical-align: middle; }
+.data td.k { background-color: #eeeeee; font-weight: bold; text-align: {{ align }}; }
+.data td.v { font-weight: bold; text-align: center; }
+.body p { text-align: {{ 'right' if ar else 'justify' }}; line-height: {{ '1.9' if ar else '1.6' }}; font-size: {{ '12.5pt' if ar else '11pt' }}; margin: 0 0 4mm 0; }
+.place { text-align: {{ 'left' if ar else 'right' }}; margin-top: 6mm; }
+.sign td { border: 1.2pt solid #000; height: 33mm; text-align: center; font-weight: bold; font-size: 10pt; padding: 2mm; }
+.footer { border-top: 1.2pt solid #000; text-align: center; font-weight: bold; font-size: 8.5pt; padding-top: 1.5mm; margin-top: 10mm; }
+</style>
+</head>
+<body>
+{% set L = {
+  'number': 'التزام رقم' if ar else 'Engagement N°',
+  'contract': 'العقد رقم' if ar else 'Contrat N°',
+  'data': 'بيانات المكتري والسيارة' if ar else 'Informations du locataire et du véhicule',
+  'name': 'الاسم الكامل' if ar else 'Nom et prénom',
+  'cin': 'رقم البطاقة الوطنية' if ar else 'N° CIN',
+  'passport': 'رقم جواز السفر' if ar else 'N° passeport',
+  'license': 'رقم رخصة السياقة' if ar else 'N° permis',
+  'phone': 'الهاتف' if ar else 'Téléphone',
+  'vehicle': 'نوع السيارة' if ar else 'Véhicule',
+  'plate': 'رقم التسجيل' if ar else 'Immatriculation',
+  'period': 'مدة الكراء' if ar else 'Période',
+  'done': 'حرر ب' if ar else 'Fait à',
+  'on': 'بتاريخ' if ar else 'le',
+  'client_sign': 'توقيع المكتري' if ar else 'Signature du client',
+  'client_hint': 'مسبوقا بعبارة: قرأت ووافقت' if ar else '(précédée de la mention « lu et approuvé »)',
+  'agency_sign': 'طابع وتوقيع الوكالة' if ar else 'Cachet et signature de',
+} %}
+{% set period = ((e.start_date|date_fr) ~ ' - ' ~ (e.end_date|date_fr)) if (e.start_date or e.end_date) else '' %}
+{% set rows = [
+  (L.name, e.client_name, L.phone, e.client_phone),
+  (L.cin, e.client_cin, L.passport, e.client_passport),
+  (L.license, e.client_license_no, L.vehicle, e.vehicle_label),
+  (L.plate, e.vehicle_plate, L.period, period),
+] %}
+
+{# En-tête : logo et numéro (le numéro passe à gauche en arabe) #}
+{% macro brand() -%}
+  {% if logo_file %}<img src="{{ logo_file }}" width="170" height="62">{% else %}<div class="agency">{{ agency.name }}</div><div class="small">{{ agency.slogan }}</div>{% endif %}
+{%- endmacro %}
+{% macro number(text_align) -%}
+  <div style="text-align:{{ text_align }}">{% if ar and agency.name_ar %}<b>{{ agency.name_ar }}</b><br>{% endif %}{{ L.number }}<br><span class="num">{{ e.number }}</span>
+  {% if e.contract_number %}<br><span class="small">{{ L.contract }} {{ e.contract_number }}</span>{% endif %}</div>
+{%- endmacro %}
+<table><tr>
+  {% if ar %}
+    <td width="45%" style="vertical-align:middle">{{ number('left') }}</td>
+    <td width="55%" style="text-align:right">{{ brand() }}</td>
+  {% else %}
+    <td width="55%">{{ brand() }}</td>
+    <td width="45%" style="vertical-align:middle">{{ number('right') }}</td>
+  {% endif %}
+</tr></table>
+<div class="rule"></div>
+
+<h1>{{ e.title }}</h1>
+
+<div class="cap">{{ L.data }}</div>
+<table class="data">
+  {% for k1, v1, k2, v2 in rows %}
+  <tr>
+    {% if ar %}
+      <td class="v" width="27%">{{ v2 or '' }}</td><td class="k" width="23%">{{ k2 }}</td>
+      <td class="v" width="27%">{{ v1 or '' }}</td><td class="k" width="23%">{{ k1 }}</td>
+    {% else %}
+      <td class="k" width="23%">{{ k1 }}</td><td class="v" width="27%">{{ v1 or '' }}</td>
+      <td class="k" width="23%">{{ k2 }}</td><td class="v" width="27%">{{ v2 or '' }}</td>
+    {% endif %}
+  </tr>
+  {% endfor %}
+</table>
+
+<div class="body" style="margin-top:6mm">
+  {% for para in e.body.split('\n') if para.strip() %}
+    <p{% if ar %} dir="rtl"{% endif %}>{{ para }}</p>
+  {% endfor %}
+</div>
+
+<p class="place"{% if ar %} dir="rtl"{% endif %}>{% if ar %}{{ L.done }} {{ e.place or agency.city }}، {{ L.on }} {{ e.doc_date|date_fr }}{% else %}{{ L.done }} {{ e.place or agency.city }}, {{ L.on }} {{ e.doc_date|date_fr }}{% endif %}</p>
+
+<table class="sign" style="margin-top:5mm"><tr>
+  {% set client_cell %}{{ L.client_sign }}<br><span style="font-weight:normal">{{ L.client_hint }}</span>{% endset %}
+  {% set agency_cell %}{{ L.agency_sign }}<br>{{ agency.name }}{% endset %}
+  <td width="48%"{% if ar %} dir="rtl"{% endif %}>{{ agency_cell if ar else client_cell }}</td>
+  <td width="4%" style="border:0"></td>
+  <td width="48%"{% if ar %} dir="rtl"{% endif %}>{{ client_cell if ar else agency_cell }}</td>
+</tr></table>
+
+<div class="footer">
+  {{ agency.name }} - {{ agency.address }}{% if agency.city %}, {{ agency.city }}{% endif %}{% if agency.phone %} - Tél : {{ agency.phone }}{% endif %}
+  {% if agency.ice %}<br>ICE : {{ agency.ice }}{% if agency.rc %} · RC : {{ agency.rc }}{% endif %}{% endif %}
+</div>
+</body>
+</html>

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% from "_macros.html" import contract_status, delete_button %}
+{% block title %}Contrat {{ c.number }}{% endblock %}
+{% block content %}
+<div class="page-header no-print">
+  <div>
+    <h1>Contrat {{ c.number }} {{ contract_status(c) }}</h1>
+    <div class="subtitle">
+      Créé le {{ c.created_at|date_fr }}
+      {% if c.source %} · dupliqué depuis <a href="{{ url_for('contracts.view', contract_id=c.source.id) }}">{{ c.source.number }}</a>{% endif %}
+      {% if c.copies %} · copies : {% for cp in c.copies %}<a href="{{ url_for('contracts.view', contract_id=cp.id) }}">{{ cp.number }}</a>{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}
+      {% if c.client_id %} · <a href="{{ url_for('clients.view', client_id=c.client_id) }}">fiche client</a>{% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="doc-toolbar no-print">
+  <button class="btn btn-primary" type="button" data-print><i class="bi bi-printer"></i> Imprimer (A4)</button>
+  <a class="btn btn-outline-primary" href="{{ url_for('contracts.pdf', contract_id=c.id) }}"><i class="bi bi-download"></i> Télécharger le PDF</a>
+  <a class="btn btn-outline-secondary" href="{{ url_for('contracts.pdf', contract_id=c.id, inline=1) }}" target="_blank"><i class="bi bi-file-earmark-pdf"></i> Ouvrir le PDF</a>
+  <a class="btn btn-outline-secondary" href="{{ url_for('contracts.edit', contract_id=c.id) }}"><i class="bi bi-pencil"></i> Modifier</a>
+  <a class="btn btn-outline-secondary" href="{{ url_for('contracts.duplicate', contract_id=c.id) }}"><i class="bi bi-copy"></i> Dupliquer</a>
+  <a class="btn btn-outline-secondary" href="{{ url_for('engagements.create', contract_id=c.id) }}"><i class="bi bi-pen"></i> Créer un engagement</a>
+  {{ delete_button(url_for('contracts.delete', contract_id=c.id), 'Supprimer définitivement le contrat ' ~ c.number ~ ' ? Cette action est irréversible.', label='Supprimer') }}
+  {% if c.status == 'en_cours' %}
+  <form method="post" action="{{ url_for('contracts.cancel', contract_id=c.id) }}" data-confirm="Annuler ce contrat ? Il restera dans l'historique.">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-outline-danger"><i class="bi bi-x-circle"></i> Annuler</button>
+  </form>
+  {% endif %}
+</div>
+
+{% if c.status == 'en_cours' %}
+<div class="card mb-3 no-print">
+  <div class="card-body">
+    <form class="row g-2 align-items-end" method="post" action="{{ url_for('contracts.close', contract_id=c.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="col-12 col-md-auto fw-semibold"><i class="bi bi-arrow-return-left"></i> Retour du véhicule</div>
+      <div class="col-sm-4 col-md-3">
+        <label class="form-label small mb-1" for="km_end">Kilométrage retour</label>
+        <input class="form-control" type="number" min="{{ c.km_start or 0 }}" id="km_end" name="km_end" value="{{ c.km_end or '' }}" placeholder="{{ c.km_start or '' }}">
+      </div>
+      <div class="col-sm-4 col-md-2">
+        <label class="form-label small mb-1" for="fuel_level">Carburant</label>
+        <select class="form-select" id="fuel_level" name="fuel_level">
+          {% for f in fuel_levels %}<option {% if f == c.fuel_level %}selected{% endif %}>{{ f }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-sm-4 col-md-auto"><button class="btn btn-success w-100"><i class="bi bi-check2-circle"></i> Clôturer le contrat</button></div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<div class="a4-wrapper">
+  {% include "contracts/_sheet.html" %}
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}{{ 'Modifier le véhicule' if vehicle.id else 'Nouveau véhicule' }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>{{ 'Modifier : ' ~ vehicle.label ~ ' (' ~ vehicle.plate ~ ')' if vehicle.id else 'Nouveau véhicule' }}</h1>
+  <a class="btn btn-light" href="{{ url_for('vehicles.view', vehicle_id=vehicle.id) if vehicle.id else url_for('vehicles.index') }}"><i class="bi bi-arrow-left"></i> Retour</a>
+</div>
+<form method="post" class="card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="card-body">
+    <div class="form-section-title">Véhicule</div>
+    <div class="row g-3 mb-4">
+      {{ field('brand', 'Marque', vehicle.brand, required=true, cls='col-md-4', attrs='placeholder="Dacia"') }}
+      {{ field('model', 'Modèle', vehicle.model, required=true, cls='col-md-4', attrs='placeholder="Logan"') }}
+      {{ field('plate', 'Immatriculation', vehicle.plate, required=true, cls='col-md-4', attrs='placeholder="12345-A-6"') }}
+      {{ field('year', 'Année', vehicle.year, type='number', cls='col-md-3', attrs='min="1980" max="2100"') }}
+      {{ field('color', 'Couleur', vehicle.color, cls='col-md-3') }}
+      <div class="col-md-3">
+        <label class="form-label" for="fuel">Carburant</label>
+        <select class="form-select" id="fuel" name="fuel">
+          {% for f in fuels %}<option {% if f == vehicle.fuel %}selected{% endif %}>{{ f }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="gearbox">Boîte de vitesses</label>
+        <select class="form-select" id="gearbox" name="gearbox">
+          {% for g in ['Manuelle', 'Automatique'] %}<option {% if g == vehicle.gearbox %}selected{% endif %}>{{ g }}</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="form-section-title">Exploitation</div>
+    <div class="row g-3">
+      {{ field('daily_rate', 'Tarif journalier (' ~ agency.currency ~ ')', vehicle.daily_rate, type='number', required=true, cls='col-md-3', attrs='step="0.01" min="0"') }}
+      {{ field('mileage', 'Kilométrage actuel', vehicle.mileage, type='number', cls='col-md-3', attrs='min="0"') }}
+      <div class="col-md-3">
+        <label class="form-label" for="status">Statut</label>
+        <select class="form-select" id="status" name="status">
+          {% for key, label in statuses.items() %}<option value="{{ key }}" {% if key == vehicle.status %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3"></div>
+      {{ field('insurance_expiry', 'Fin d\'assurance', vehicle.insurance_expiry|iso, type='date', cls='col-md-3') }}
+      {{ field('technical_visit_expiry', 'Prochaine visite technique', vehicle.technical_visit_expiry|iso, type='date', cls='col-md-3') }}
+      <div class="col-12">
+        <label class="form-label" for="notes">Notes</label>
+        <textarea class="form-control" id="notes" name="notes" rows="2">{{ vehicle.notes or '' }}</textarea>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer bg-white text-end"><button class="btn btn-primary"><i class="bi bi-check-lg"></i> Enregistrer</button></div>
+</form>
+{% endblock %}

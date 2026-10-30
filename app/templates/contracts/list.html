@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pager, empty, contract_status, delete_button %}
+{% block title %}Contrats{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>Contrats de location</h1><div class="subtitle">{{ pagination.total }} contrat(s){% if q %} pour « {{ q }} »{% endif %}</div></div>
+  <a class="btn btn-primary" href="{{ url_for('contracts.create') }}"><i class="bi bi-plus-lg"></i> Nouveau contrat</a>
+</div>
+<div class="card">
+  <div class="card-body border-bottom">
+    <form class="row g-2" method="get">
+      <div class="col-md-6"><input class="form-control" type="search" name="q" value="{{ q }}" placeholder="N° de contrat, nom du client, CIN, passeport, téléphone, immatriculation"></div>
+      <div class="col-md-3">
+        <select class="form-select" name="status">
+          <option value="">Tous les statuts</option>
+          {% for key, label in statuses.items() %}<option value="{{ key }}" {% if key == status %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-auto"><button class="btn btn-primary"><i class="bi bi-search"></i> Rechercher</button></div>
+      {% if q or status %}<div class="col-auto"><a class="btn btn-light" href="{{ url_for('contracts.index') }}">Réinitialiser</a></div>{% endif %}
+    </form>
+  </div>
+  <div class="table-responsive">
+    {% if pagination.items %}
+    <table class="table table-hover align-middle mb-0">
+      <thead><tr><th>N°</th><th>Client</th><th>Véhicule</th><th>Départ</th><th>Retour</th><th class="text-end">Montant</th><th class="text-end">Reste</th><th>Statut</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+      {% for c in pagination.items %}
+        <tr>
+          <td><a class="fw-semibold" href="{{ url_for('contracts.view', contract_id=c.id) }}">{{ c.number }}</a>
+            {% if c.source %}<div class="small-muted" title="Dupliqué depuis"><i class="bi bi-copy"></i> {{ c.source.number }}</div>{% endif %}</td>
+          <td>{{ c.client_name }}<div class="small-muted">{{ c.client_cin or c.client_passport }}</div></td>
+          <td>{{ c.vehicle_label }}<div class="small-muted">{{ c.vehicle_plate }}</div></td>
+          <td class="small">{{ c.start_at|date_fr }}</td>
+          <td class="small">{{ c.end_at|date_fr }}</td>
+          <td class="text-end">{{ c.amount|money }}</td>
+          <td class="text-end {% if c.remaining > 0 %}text-danger fw-semibold{% endif %}">{{ c.remaining|money }}</td>
+          <td>{{ contract_status(c) }}</td>
+          <td class="text-end text-nowrap">
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('contracts.view', contract_id=c.id) }}" title="Afficher / imprimer"><i class="bi bi-printer"></i></a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('contracts.pdf', contract_id=c.id) }}" title="Télécharger le PDF"><i class="bi bi-file-earmark-pdf"></i></a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('contracts.duplicate', contract_id=c.id) }}" title="Dupliquer"><i class="bi bi-copy"></i></a>
+            {{ delete_button(url_for('contracts.delete', contract_id=c.id), 'Supprimer définitivement le contrat ' ~ c.number ~ ' ? Cette action est irréversible.', small=true) }}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}{{ empty('Aucun contrat trouvé.', 'file-earmark-text') }}{% endif %}
+  </div>
+</div>
+{{ pager(pagination, 'contracts.index') }}
+{% endblock %}

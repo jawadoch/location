@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Tableau de bord{% endblock %} · {{ agency.name }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap-icons/bootstrap-icons.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/print.css') }}" media="print">
+  {% block head %}{% endblock %}
+</head>
+<body>
+{% set ep = request.endpoint or '' %}
+{% macro nav_link(endpoint_prefix, url, icon, label) -%}
+  <a class="nav-link {% if ep.startswith(endpoint_prefix) %}active{% endif %}" href="{{ url }}">
+    <i class="bi bi-{{ icon }}"></i><span>{{ label }}</span>
+  </a>
+{%- endmacro %}
+
+<div class="app-shell">
+  <aside class="sidebar no-print" id="sidebar">
+    <a class="brand" href="{{ url_for('main.dashboard') }}">
+      <i class="bi bi-car-front-fill"></i>
+      <div><strong>{{ agency.name }}</strong><small>{{ agency.slogan }}</small></div>
+    </a>
+    <nav class="nav flex-column">
+      {{ nav_link('main.', url_for('main.dashboard'), 'speedometer2', 'Tableau de bord') }}
+      {{ nav_link('contracts.', url_for('contracts.index'), 'file-earmark-text', 'Contrats') }}
+      {{ nav_link('engagements.', url_for('engagements.index'), 'pen', 'Engagements') }}
+      {{ nav_link('clients.', url_for('clients.index'), 'people', 'Clients') }}
+      {{ nav_link('vehicles.', url_for('vehicles.index'), 'car-front', 'Véhicules') }}
+      {{ nav_link('settings.', url_for('settings.agency'), 'gear', 'Paramètres') }}
+    </nav>
+    <div class="sidebar-actions">
+      <a class="btn btn-warning w-100 mb-2" href="{{ url_for('contracts.create') }}"><i class="bi bi-plus-lg"></i> Nouveau contrat</a>
+      <a class="btn btn-outline-light w-100" href="{{ url_for('engagements.create') }}"><i class="bi bi-plus-lg"></i> Nouvel engagement</a>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar no-print">
+      <button class="btn btn-light d-lg-none" type="button" id="sidebarToggle" aria-label="Menu"><i class="bi bi-list"></i></button>
+      <form class="topbar-search" action="{{ url_for('contracts.index') }}" method="get">
+        <i class="bi bi-search"></i>
+        <input class="form-control" type="search" name="q" placeholder="Rechercher un contrat : nom, CIN, N°, immatriculation…">
+      </form>
+      <span class="text-muted small d-none d-md-inline">{{ agency.city }}</span>
+    </header>
+
+    <main class="content">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show no-print" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+          </div>
+        {% endfor %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='vendor/bootstrap/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

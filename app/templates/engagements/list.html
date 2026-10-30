@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pager, empty %}
+{% block title %}Engagements{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>Engagements</h1><div class="subtitle">{{ pagination.total }} engagement(s){% if q %} pour « {{ q }} »{% endif %}</div></div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-primary" href="{{ url_for('engagements.templates') }}"><i class="bi bi-journal-text"></i> Modèles</a>
+    <a class="btn btn-primary" href="{{ url_for('engagements.create') }}"><i class="bi bi-plus-lg"></i> Nouvel engagement</a>
+  </div>
+</div>
+<div class="card">
+  <div class="card-body border-bottom">
+    <form class="row g-2" method="get">
+      <div class="col-md-7"><input class="form-control" type="search" name="q" value="{{ q }}" placeholder="N° d'engagement, nom du client, CIN, passeport, téléphone, N° de contrat"></div>
+      <div class="col-auto"><button class="btn btn-primary"><i class="bi bi-search"></i> Rechercher</button></div>
+      {% if q %}<div class="col-auto"><a class="btn btn-light" href="{{ url_for('engagements.index') }}">Réinitialiser</a></div>{% endif %}
+    </form>
+  </div>
+  <div class="table-responsive">
+    {% if pagination.items %}
+    <table class="table table-hover align-middle mb-0">
+      <thead><tr><th>N°</th><th>Titre</th><th>Client</th><th>Contrat</th><th>Date</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+      {% for e in pagination.items %}
+        <tr>
+          <td><a class="fw-semibold" href="{{ url_for('engagements.view', engagement_id=e.id) }}">{{ e.number }}</a>
+            {% if e.source %}<div class="small-muted"><i class="bi bi-copy"></i> {{ e.source.number }}</div>{% endif %}</td>
+          <td>{{ e.title }}</td>
+          <td>{{ e.client_name }}<div class="small-muted">{{ e.client_cin or e.client_passport }}</div></td>
+          <td>{% if e.contract_id %}<a href="{{ url_for('contracts.view', contract_id=e.contract_id) }}">{{ e.contract_number }}</a>{% else %}—{% endif %}</td>
+          <td>{{ e.doc_date|date_fr }}</td>
+          <td class="text-end text-nowrap">
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('engagements.view', engagement_id=e.id) }}" title="Afficher / imprimer"><i class="bi bi-printer"></i></a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('engagements.pdf', engagement_id=e.id) }}" title="Télécharger le PDF"><i class="bi bi-file-earmark-pdf"></i></a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('engagements.duplicate', engagement_id=e.id) }}" title="Dupliquer"><i class="bi bi-copy"></i></a>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}{{ empty('Aucun engagement trouvé.', 'pen') }}{% endif %}
+  </div>
+</div>
+{{ pager(pagination, 'engagements.index') }}
+{% endblock %}

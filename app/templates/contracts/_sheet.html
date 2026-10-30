@@ -1,0 +1,107 @@
+{# Feuille A4 du contrat (aperçu écran + impression navigateur) #}
+{% macro row(label, value, label_ar='') -%}
+  <div class="doc-row"><span class="lbl">{{ label }}</span><span class="val">{{ value if value else '' }}</span>{% if label_ar %}<span class="lbl-ar ar">{{ label_ar }}</span>{% endif %}</div>
+{%- endmacro %}
+{% macro pill(fr, ar, value) -%}
+  <div class="pill-row"><div class="pill"><span class="ar">{{ ar }}</span>{{ fr }}</div><div class="pill-val">{{ value if value else '' }}</div></div>
+{%- endmacro %}
+
+<div class="a4" id="document">
+  <div class="doc-head">
+    <div>
+      {% if logo_url %}<img class="doc-logo" src="{{ logo_url }}" alt="{{ agency.name }}">
+      {% else %}<div class="agency-name">{{ agency.name }}</div><div style="font-size:8.5pt">{{ agency.slogan }}</div>{% endif %}
+    </div>
+    <div class="doc-title">
+      <span class="ar">عقد تأجير سيارة</span>
+      <span class="fr">Contrat de location de voiture</span>
+    </div>
+    <div class="doc-number">
+      <div>Contrat N°</div>
+      <div class="num">{{ c.number }}</div>
+      {% if agency.name_ar %}<div class="ar">{{ agency.name_ar }}</div>{% endif %}
+      {% if c.status == 'annule' %}<div style="color:#b00;font-weight:800">ANNULÉ</div>{% endif %}
+    </div>
+  </div>
+
+  <div class="doc-papers">
+    <span class="ar">أوراق السيارة :</span>
+    {% for flag, label, label_ar in document_flags %}
+      <span>{{ label }} :<span class="box">{% if c[flag] %}✓{% endif %}</span></span>
+    {% endfor %}
+  </div>
+
+  <div class="doc-grid">
+    <div>
+      <div class="doc-block">
+        <div class="doc-block-title"><span>Locataire</span><span class="ar">المكتري</span></div>
+        {{ row('Nom et Prénom :', c.client_name, 'الإسم والنسب') }}
+        {{ row('Nationalité :', c.client_nationality, 'الجنسية') }}
+        {{ row('Date de naissance :', c.client_birth_date|date_fr, 'تاريخ الازدياد') }}
+        {{ row('Passeport N° :', c.client_passport, 'رقم جواز السفر') }}
+        {{ row('Délivré à :', c.client_passport_issued_at, 'صدر في') }}
+        {{ row('CIN N° :', c.client_cin, 'رقم البطاقة الوطنية') }}
+        {{ row('Permis de conduire N° :', c.client_license_no, 'رقم رخصة السياقة') }}
+        {{ row('Délivré le :', (c.client_license_date|date_fr) ~ ((' à ' ~ c.client_license_place) if c.client_license_place else ''), 'صدر في') }}
+        {{ row('Adresse au Maroc :', c.client_address, 'عنوان المغرب') }}
+        {{ row('GSM :', c.client_phone, 'الهاتف') }}
+      </div>
+      <div class="doc-block">
+        <div class="doc-block-title"><span>Autre conducteur</span><span class="ar">سائق آخر</span></div>
+        {{ row('Nom et Prénom :', c.driver2_name) }}
+        {{ row('Permis de conduire N° :', c.driver2_license_no) }}
+        {{ row('Délivré le :', (c.driver2_license_date|date_fr) ~ ((' à ' ~ c.driver2_license_place) if c.driver2_license_place else '')) }}
+        {{ row('CIN N° :', (c.driver2_cin or '') ~ ((' du ' ~ (c.driver2_cin_date|date_fr)) if c.driver2_cin_date else '')) }}
+      </div>
+      <div class="doc-block">
+        <div class="doc-block-title"><span>Véhicule changé</span><span class="ar">استبدال السيارة</span></div>
+        {{ row('Marque :', c.changed_brand, 'النوع') }}
+        {{ row('Matricule :', c.changed_plate, 'الترقيم') }}
+        {{ row('Date de changement :', c.changed_date|date_fr, 'تاريخ الاستبدال') }}
+      </div>
+    </div>
+    <div>
+      {{ pill('Marque de véhicule', 'نوع السيارة', c.vehicle_label) }}
+      {{ pill('Immatriculation', 'رقم اللوحة', c.vehicle_plate) }}
+      {{ pill('Date de départ', 'تاريخ المغادرة', c.start_at.strftime('%d/%m/%Y')) }}
+      {{ pill('Date de retour', 'تاريخ العودة', c.end_at.strftime('%d/%m/%Y') ~ ' à ' ~ c.end_at.strftime('%H:%M')) }}
+      {{ pill('Prolongation', 'التمديد', c.prolongation) }}
+      {{ pill('Kilométrage de départ', 'عدد الكيلومترات عند المغادرة', c.km_start) }}
+      {{ pill('Kilométrage de retour', 'عدد الكيلومترات عند العودة', c.km_end) }}
+      {{ pill('Nombre de jours', 'عدد الأيام', c.days ~ ' × ' ~ (c.daily_rate|money)) }}
+      {{ pill('Heure de sortie', 'ساعة التسليم', c.start_at.strftime('%H:%M')) }}
+      {{ pill('Montant', 'الثمن', c.amount|money) }}
+      {{ pill('Avance', 'تسبيق', c.advance|money) }}
+      {{ pill('Reste', 'الباقي', c.remaining|money) }}
+      {{ pill('Caution', 'الضمانة', c.caution|money if c.caution else '') }}
+      <div class="doc-block" style="margin-top:2mm">
+        {{ row('Carburant :', c.fuel_level, 'الوقود') }}
+        {{ row('Lavage :', 'Oui' if c.washing else 'Non', 'الغسل') }}
+        {{ row('Accessoires :', c.accessories) }}
+      </div>
+    </div>
+  </div>
+
+  <div class="doc-sign">
+    <div>
+      <div class="pill-row" style="grid-template-columns: 22mm 1fr"><div class="pill" style="font-size:11pt;font-weight:800">Date</div><div class="pill-val">{{ c.created_at.strftime('%d/%m/%Y') if c.created_at else '' }}</div></div>
+      <div class="sign-box">Cachet et signature responsable de<br>{{ agency.name }}</div>
+    </div>
+    <div class="sign-box" style="margin-top:9mm"><span class="ar">بصمة المكتري</span><br>Empreinte du locataire</div>
+    <div>
+      <div class="pill" style="border:1.5px solid #000;border-radius:4mm;text-align:center;font-weight:800;padding:1.2mm;margin-bottom:1.5mm">Signature du client</div>
+      <div class="sign-split"><div>DÉPART</div><div>RETOUR</div></div>
+    </div>
+  </div>
+
+  <div class="doc-terms">
+    <div>{{ agency.contract_terms }}</div>
+    <div class="ar">{{ agency.contract_terms_ar }}</div>
+  </div>
+
+  <div class="doc-footer">
+    {{ agency.address }}{% if agency.city %}, {{ agency.city }}{% endif %}{% if agency.phone %} — Tél : {{ agency.phone }}{% endif %}
+    {% if agency.email %} — {{ agency.email }}{% endif %}
+    {% if agency.ice or agency.rc %}<br>{% if agency.ice %}ICE : {{ agency.ice }}{% endif %}{% if agency.rc %} · RC : {{ agency.rc }}{% endif %}{% if agency.tax_id %} · IF : {{ agency.tax_id }}{% endif %}{% if agency.patente %} · Patente : {{ agency.patente }}{% endif %}{% endif %}
+  </div>
+</div>
