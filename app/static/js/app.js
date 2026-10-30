@@ -1,6 +1,9 @@
 (function () {
   "use strict";
 
+  // Textes traduits fournis par base.html (window.I18N)
+  const t = (s) => (window.I18N && window.I18N[s]) || s;
+
   // ---------- Menu latéral (mobile)
   const toggle = document.getElementById("sidebarToggle");
   const sidebar = document.getElementById("sidebar");
@@ -55,8 +58,8 @@
       });
       if (idField) idField.value = client.id;
       if (badge) {
-        badge.innerHTML = '<i class="bi bi-person-check"></i> Client existant : ' + escapeHtml(client.full_name) +
-          ' <button type="button" class="btn btn-link btn-sm p-0 ms-2" data-unlink>Délier</button>';
+        badge.innerHTML = '<i class="bi bi-person-check"></i> ' + escapeHtml(t("Client existant :")) + ' ' + escapeHtml(client.full_name) +
+          ' <button type="button" class="btn btn-link btn-sm p-0 ms-2" data-unlink>' + escapeHtml(t("Délier")) + '</button>';
         badge.classList.remove("d-none");
         badge.querySelector("[data-unlink]").addEventListener("click", () => {
           if (idField) idField.value = "";
@@ -69,12 +72,12 @@
 
     function render() {
       if (!results.length) {
-        list.innerHTML = '<div class="p-2 small text-muted">Aucun client trouvé — saisissez ses informations ci-dessous, la fiche sera créée automatiquement.</div>';
+        list.innerHTML = '<div class="p-2 small text-muted">' + escapeHtml(t("Aucun client trouvé — saisissez ses informations ci-dessous, la fiche sera créée automatiquement.")) + '</div>';
       } else {
         list.innerHTML = results.map((c, i) =>
           `<button type="button" data-i="${i}" class="${i === active ? "active" : ""}">
              <strong>${escapeHtml(c.full_name)}</strong><br>
-             <small>CIN : ${escapeHtml(c.cin || "—")} · Passeport : ${escapeHtml(c.passport_no || "—")} · Tél : ${escapeHtml(c.phone || "—")}</small>
+             <small>${escapeHtml(t("CIN"))} : ${escapeHtml(c.cin || "—")} · ${escapeHtml(t("Passeport"))} : ${escapeHtml(c.passport_no || "—")} · ${escapeHtml(t("Tél"))} : ${escapeHtml(c.phone || "—")}</small>
            </button>`).join("");
         list.querySelectorAll("button").forEach((b) =>
           b.addEventListener("mousedown", (e) => { e.preventDefault(); choose(results[+b.dataset.i]); }));
@@ -159,7 +162,7 @@
       const tpl = templates[tplSelect.value];
       if (!tpl) return;
       const body = document.getElementById("body_source");
-      if (body.value.trim() && !window.confirm("Remplacer le texte actuel par celui du modèle ?")) return;
+      if (body.value.trim() && !window.confirm(t("Remplacer le texte actuel par celui du modèle ?"))) return;
       document.getElementById("title").value = tpl.title;
       body.value = tpl.body;
     });

@@ -4,6 +4,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from sqlalchemy.exc import IntegrityError
 
 from ..extensions import db
+from ..i18n import _
 from ..models import Agency, Client, Contract, Engagement, EngagementTemplate, Vehicle
 from ..pdf import pdf_response
 from ..utils import (
@@ -51,15 +52,15 @@ def apply_engagement_form(e, form):
 def validate_engagement(e):
     errors = []
     if not e.title:
-        errors.append("Le titre est obligatoire.")
+        errors.append(_("Le titre est obligatoire."))
     if not e.body_source:
-        errors.append("Le texte de l'engagement est obligatoire.")
+        errors.append(_("Le texte de l'engagement est obligatoire."))
     if not e.client_name:
-        errors.append("Le nom du client est obligatoire.")
+        errors.append(_("Le nom du client est obligatoire."))
     if e.contract_number and not Contract.query.filter_by(number=e.contract_number).first():
-        errors.append(f"Aucun contrat ne porte le numéro {e.contract_number}.")
+        errors.append(_("Aucun contrat ne porte le numéro {number}.", number=e.contract_number))
     if e.amount is not None and e.amount < 0:
-        errors.append("Le montant ne peut pas être négatif.")
+        errors.append(_("Le montant ne peut pas être négatif."))
     return errors
 
 
@@ -187,9 +188,9 @@ def create():
                 link_and_render(e)
                 db.session.add(e)
             if save_new(e):
-                flash(f"Engagement {e.number} enregistré.", "success")
+                flash(_("Engagement {number} enregistré.", number=e.number), "success")
                 return redirect(url_for("engagements.view", engagement_id=e.id))
-            flash("Impossible de générer un numéro unique, réessayez.", "danger")
+            flash(_("Impossible de générer un numéro unique, réessayez."), "danger")
     else:
         template_id = request.args.get("template_id", type=int)
         tpl = db.session.get(EngagementTemplate, template_id) if template_id else None
@@ -204,7 +205,7 @@ def create():
             prefill_from_contract(e, contract)
         elif client:
             prefill_from_client(e, client)
-    return render_form(e, "Nouvel engagement", source)
+    return render_form(e, _("Nouvel engagement"), source)
 
 
 @bp.route("/<int:engagement_id>")
@@ -235,15 +236,15 @@ def edit(engagement_id):
                 link_and_render(e)
         if not errors:
             db.session.commit()
-            flash("Engagement mis à jour.", "success")
+            flash(_("Engagement mis à jour."), "success")
             return redirect(url_for("engagements.view", engagement_id=e.id))
         db.session.rollback()
         for msg in errors:
             flash(msg, "danger")
         draft = Engagement(id=engagement_id, number=e.number)
         apply_engagement_form(draft, request.form)
-        return render_form(draft, f"Modifier l'engagement {draft.number}")
-    return render_form(e, f"Modifier l'engagement {e.number}")
+        return render_form(draft, _("Modifier l'engagement {number}", number=draft.number))
+    return render_form(e, _("Modifier l'engagement {number}", number=e.number))
 
 
 @bp.route("/<int:engagement_id>/dupliquer")
@@ -256,11 +257,11 @@ def duplicate(engagement_id):
     e.doc_date = date.today()
     e.source_id = source.id
     flash(
-        f"Duplication de l'engagement {source.number} : modifiez les informations utiles. "
-        "Un nouveau numéro sera attribué ; l'original reste inchangé.",
+        _("Duplication de l'engagement {number} : modifiez les informations utiles. "
+          "Un nouveau numéro sera attribué ; l'original reste inchangé.", number=source.number),
         "info",
     )
-    return render_form(e, f"Dupliquer l'engagement {source.number}", source)
+    return render_form(e, _("Dupliquer l'engagement {number}", number=source.number), source)
 
 
 # ---------------------------------------------------------------- modèles
@@ -290,9 +291,9 @@ def template_create():
         if tpl.name and tpl.title and tpl.body:
             db.session.add(tpl)
             db.session.commit()
-            flash("Modèle enregistré.", "success")
+            flash(_("Modèle enregistré."), "success")
             return redirect(url_for("engagements.templates"))
-        flash("Le nom, le titre et le texte sont obligatoires.", "danger")
+        flash(_("Le nom, le titre et le texte sont obligatoires."), "danger")
     return render_template_form(tpl)
 
 
@@ -303,10 +304,10 @@ def template_edit(template_id):
         apply_template_form(tpl, request.form)
         if tpl.name and tpl.title and tpl.body:
             db.session.commit()
-            flash("Modèle mis à jour (les engagements déjà créés ne changent pas).", "success")
+            flash(_("Modèle mis à jour (les engagements déjà créés ne changent pas)."), "success")
             return redirect(url_for("engagements.templates"))
         db.session.rollback()
-        flash("Le nom, le titre et le texte sont obligatoires.", "danger")
+        flash(_("Le nom, le titre et le texte sont obligatoires."), "danger")
         tpl = EngagementTemplate(id=template_id)
         apply_template_form(tpl, request.form)
     return render_template_form(tpl)

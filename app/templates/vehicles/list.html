@@ -1,47 +1,47 @@
 {% extends "base.html" %}
 {% from "_macros.html" import pager, empty, vehicle_status, delete_button %}
-{% block title %}Véhicules{% endblock %}
+{% block title %}{{ _('Véhicules') }}{% endblock %}
 {% block content %}
 <div class="page-header">
-  <div><h1>Véhicules</h1><div class="subtitle">{{ pagination.total }} véhicule(s)</div></div>
-  <a class="btn btn-primary" href="{{ url_for('vehicles.create') }}"><i class="bi bi-plus-lg"></i> Nouveau véhicule</a>
+  <div><h1>{{ _('Véhicules') }}</h1><div class="subtitle">{{ _('{n} véhicule(s)', n=pagination.total) }}</div></div>
+  <a class="btn btn-primary" href="{{ url_for('vehicles.create') }}"><i class="bi bi-plus-lg"></i> {{ _('Nouveau véhicule') }}</a>
 </div>
 <div class="card">
   <div class="card-body border-bottom">
     <form class="row g-2" method="get">
-      <div class="col-md-6"><input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Marque, modèle ou immatriculation"></div>
+      <div class="col-md-6"><input class="form-control" type="search" name="q" value="{{ q }}" placeholder="{{ _('Marque, modèle ou immatriculation') }}"></div>
       <div class="col-md-3">
         <select class="form-select" name="status">
-          <option value="">Tous les statuts</option>
-          {% for key, label in statuses.items() %}<option value="{{ key }}" {% if key == status %}selected{% endif %}>{{ label }}</option>{% endfor %}
+          <option value="">{{ _('Tous les statuts') }}</option>
+          {% for key, label in statuses.items() %}<option value="{{ key }}" {% if key == status %}selected{% endif %}>{{ _(label) }}</option>{% endfor %}
         </select>
       </div>
-      <div class="col-auto"><button class="btn btn-primary"><i class="bi bi-search"></i> Filtrer</button></div>
+      <div class="col-auto"><button class="btn btn-primary"><i class="bi bi-search"></i> {{ _('Filtrer') }}</button></div>
     </form>
   </div>
   <div class="table-responsive">
     {% if pagination.items %}
     <table class="table table-hover align-middle mb-0">
-      <thead><tr><th>Véhicule</th><th>Immatriculation</th><th>Carburant</th><th class="text-end">Kilométrage</th><th class="text-end">Tarif / jour</th><th>Statut</th><th class="text-end">Actions</th></tr></thead>
+      <thead><tr><th>{{ _('Véhicule') }}</th><th>{{ _('Immatriculation') }}</th><th>{{ _('Carburant') }}</th><th class="text-end">{{ _('Kilométrage') }}</th><th class="text-end">{{ _('Tarif / jour') }}</th><th>{{ _('Statut') }}</th><th class="text-end">{{ _('Actions') }}</th></tr></thead>
       <tbody>
       {% for v in pagination.items %}
         <tr>
           <td><a class="fw-semibold" href="{{ url_for('vehicles.view', vehicle_id=v.id) }}">{{ v.label }}</a><div class="small-muted">{{ v.year or '' }} {{ v.color }}</div></td>
-          <td><span class="badge text-bg-light border">{{ v.plate }}</span></td>
-          <td>{{ v.fuel }} · {{ v.gearbox }}</td>
-          <td class="text-end">{{ '{:,}'.format(v.mileage or 0).replace(',', ' ') }} km</td>
+          <td><span class="badge text-bg-light border" dir="ltr">{{ (v.plate)|ltr }}</span></td>
+          <td>{{ _(v.fuel) }} · {{ _(v.gearbox) }}</td>
+          <td class="text-end"><span dir="ltr">{{ '{:,}'.format(v.mileage or 0).replace(',', ' ') }}</span> {{ _('km') }}</td>
           <td class="text-end fw-semibold">{{ v.daily_rate|money }}</td>
           <td>{{ vehicle_status(v) }}</td>
           <td class="text-end text-nowrap">
-            {% if v.status == 'disponible' %}<a class="btn btn-sm btn-outline-primary" href="{{ url_for('contracts.create', vehicle_id=v.id) }}" title="Louer"><i class="bi bi-file-earmark-plus"></i></a>{% endif %}
-            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('vehicles.edit', vehicle_id=v.id) }}" title="Modifier"><i class="bi bi-pencil"></i></a>
-            {{ delete_button(url_for('vehicles.delete', vehicle_id=v.id), "Supprimer définitivement le véhicule " ~ v.plate ~ " ? Ses contrats restent dans l'historique.", small=true) }}
+            {% if v.status == 'disponible' %}<a class="btn btn-sm btn-outline-primary" href="{{ url_for('contracts.create', vehicle_id=v.id) }}" title="{{ _('Louer') }}"><i class="bi bi-file-earmark-plus"></i></a>{% endif %}
+            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('vehicles.edit', vehicle_id=v.id) }}" title="{{ _('Modifier') }}"><i class="bi bi-pencil"></i></a>
+            {{ delete_button(url_for('vehicles.delete', vehicle_id=v.id), _("Supprimer définitivement le véhicule {plate} ? Ses contrats restent dans l'historique.", plate=v.plate), small=true) }}
           </td>
         </tr>
       {% endfor %}
       </tbody>
     </table>
-    {% else %}{{ empty('Aucun véhicule enregistré.', 'car-front') }}{% endif %}
+    {% else %}{{ empty(_('Aucun véhicule enregistré.'), 'car-front') }}{% endif %}
   </div>
 </div>
 {{ pager(pagination, 'vehicles.index') }}

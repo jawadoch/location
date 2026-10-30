@@ -11,9 +11,11 @@ class Config:
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     ITEMS_PER_PAGE = 20
+    DEFAULT_LANGUAGE = os.environ.get("LANGUE", "ar")  # "ar" ou "fr"
 
 
 class TestConfig(Config):
     TESTING = True
+    DEFAULT_LANGUAGE = "fr"
     WTF_CSRF_ENABLED = False
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"

@@ -3,49 +3,49 @@
 {% block title %}{{ vehicle.label }}{% endblock %}
 {% block content %}
 <div class="page-header">
-  <div><h1>{{ vehicle.label }} <span class="badge text-bg-light border fs-6 align-middle">{{ vehicle.plate }}</span></h1>
+  <div><h1>{{ vehicle.label }} <span class="badge text-bg-light border fs-6 align-middle" dir="ltr">{{ (vehicle.plate)|ltr }}</span></h1>
     <div class="subtitle">{{ vehicle_status(vehicle) }}</div></div>
   <div class="d-flex flex-wrap gap-2">
-    {% if vehicle.status == 'disponible' %}<a class="btn btn-primary" href="{{ url_for('contracts.create', vehicle_id=vehicle.id) }}"><i class="bi bi-file-earmark-plus"></i> Louer ce véhicule</a>{% endif %}
-    <a class="btn btn-outline-secondary" href="{{ url_for('vehicles.edit', vehicle_id=vehicle.id) }}"><i class="bi bi-pencil"></i> Modifier</a>
-    {{ delete_button(url_for('vehicles.delete', vehicle_id=vehicle.id), "Supprimer définitivement le véhicule " ~ vehicle.plate ~ " ? Ses contrats restent dans l'historique.", label='Supprimer') }}
+    {% if vehicle.status == 'disponible' %}<a class="btn btn-primary" href="{{ url_for('contracts.create', vehicle_id=vehicle.id) }}"><i class="bi bi-file-earmark-plus"></i> {{ _('Louer ce véhicule') }}</a>{% endif %}
+    <a class="btn btn-outline-secondary" href="{{ url_for('vehicles.edit', vehicle_id=vehicle.id) }}"><i class="bi bi-pencil"></i> {{ _('Modifier') }}</a>
+    {{ delete_button(url_for('vehicles.delete', vehicle_id=vehicle.id), _("Supprimer définitivement le véhicule {plate} ? Ses contrats restent dans l'historique.", plate=vehicle.plate), label=_('Supprimer')) }}
   </div>
 </div>
 <div class="row g-3">
   <div class="col-lg-4">
-    <div class="card"><div class="card-header">Fiche</div><div class="card-body">
+    <div class="card"><div class="card-header">{{ _('Fiche') }}</div><div class="card-body">
       <dl class="info mb-0">
-        <dt>Année / couleur</dt><dd>{{ vehicle.year or '—' }} · {{ vehicle.color or '—' }}</dd>
-        <dt>Motorisation</dt><dd>{{ vehicle.fuel }} · {{ vehicle.gearbox }}</dd>
-        <dt>Kilométrage</dt><dd>{{ '{:,}'.format(vehicle.mileage or 0).replace(',', ' ') }} km</dd>
-        <dt>Tarif journalier</dt><dd class="fw-bold">{{ vehicle.daily_rate|money }}</dd>
-        <dt>Fin d'assurance</dt><dd>{{ vehicle.insurance_expiry|date_fr or '—' }}</dd>
-        <dt>Visite technique</dt><dd>{{ vehicle.technical_visit_expiry|date_fr or '—' }}</dd>
-        {% if vehicle.notes %}<dt>Notes</dt><dd>{{ vehicle.notes }}</dd>{% endif %}
+        <dt>{{ _('Année / couleur') }}</dt><dd>{{ vehicle.year or '—' }} · {{ vehicle.color or '—' }}</dd>
+        <dt>{{ _('Motorisation') }}</dt><dd>{{ _(vehicle.fuel) }} · {{ _(vehicle.gearbox) }}</dd>
+        <dt>{{ _('Kilométrage') }}</dt><dd><span dir="ltr">{{ '{:,}'.format(vehicle.mileage or 0).replace(',', ' ') }}</span> {{ _('km') }}</dd>
+        <dt>{{ _('Tarif journalier') }}</dt><dd class="fw-bold">{{ vehicle.daily_rate|money }}</dd>
+        <dt>{{ _("Fin d'assurance") }}</dt><dd>{{ vehicle.insurance_expiry|date_fr or '—' }}</dd>
+        <dt>{{ _('Visite technique') }}</dt><dd>{{ vehicle.technical_visit_expiry|date_fr or '—' }}</dd>
+        {% if vehicle.notes %}<dt>{{ _('Notes') }}</dt><dd>{{ vehicle.notes }}</dd>{% endif %}
       </dl>
     </div></div>
   </div>
   <div class="col-lg-8">
     <div class="card">
-      <div class="card-header">Historique des locations ({{ contracts|length }})</div>
+      <div class="card-header">{{ _('Historique des locations') }} ({{ contracts|length }})</div>
       <div class="table-responsive">
         {% if contracts %}
         <table class="table table-hover align-middle mb-0">
-          <thead><tr><th>N°</th><th>Client</th><th>Période</th><th class="text-end">Km</th><th class="text-end">Montant</th><th>Statut</th></tr></thead>
+          <thead><tr><th>{{ _('N°') }}</th><th>{{ _('Client') }}</th><th>{{ _('Période') }}</th><th class="text-end">{{ _('Km') }}</th><th class="text-end">{{ _('Montant') }}</th><th>{{ _('Statut') }}</th></tr></thead>
           <tbody>
           {% for c in contracts %}
             <tr>
               <td><a class="fw-semibold" href="{{ url_for('contracts.view', contract_id=c.id) }}">{{ c.number }}</a></td>
               <td>{{ c.client_name }}</td>
-              <td class="small">{{ c.start_at|date_fr }}<br>{{ c.end_at|date_fr }}</td>
-              <td class="text-end small">{{ c.km_start or '' }}{% if c.km_end %} → {{ c.km_end }}{% endif %}</td>
+              <td class="small">{{ c.start_at|date_fr|ltr }}<br>{{ c.end_at|date_fr|ltr }}</td>
+              <td class="text-end small"><span dir="ltr">{{ c.km_start or '' }}{% if c.km_end %} → {{ c.km_end }}{% endif %}</span></td>
               <td class="text-end">{{ c.amount|money }}</td>
               <td>{{ contract_status(c) }}</td>
             </tr>
           {% endfor %}
           </tbody>
         </table>
-        {% else %}{{ empty('Ce véhicule n\'a pas encore été loué.') }}{% endif %}
+        {% else %}{{ empty(_("Ce véhicule n'a pas encore été loué.")) }}{% endif %}
       </div>
     </div>
   </div>

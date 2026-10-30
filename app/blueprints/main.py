@@ -1,14 +1,27 @@
 import io
 from datetime import datetime, date, timedelta
 
-from flask import Blueprint, abort, render_template, send_file
+from flask import Blueprint, abort, redirect, render_template, request, send_file, url_for
 from sqlalchemy import func
 
 from ..extensions import db
+from ..i18n import COOKIE, LANGUAGES
 from ..logo import logo_path
 from ..models import Client, Vehicle, Contract, Engagement
 
 bp = Blueprint("main", __name__)
+
+
+@bp.route("/langue/<code>")
+def set_language(code):
+    """Change la langue de l'interface et revient à la page précédente."""
+    target = request.referrer or url_for("main.dashboard")
+    if not target.startswith(request.host_url):
+        target = url_for("main.dashboard")
+    response = redirect(target)
+    if code in LANGUAGES:
+        response.set_cookie(COOKIE, code, max_age=60 * 60 * 24 * 365 * 5, samesite="Lax")
+    return response
 
 
 @bp.route("/logo.png")

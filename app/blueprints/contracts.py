@@ -4,6 +4,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from sqlalchemy.exc import IntegrityError
 
 from ..extensions import db
+from ..i18n import _
 from ..models import (
     Agency, Client, Contract, Engagement, Vehicle,
     CONTRACT_STATUSES, DOCUMENT_FLAGS, FUEL_LEVELS, PAYMENT_METHODS,
@@ -82,26 +83,26 @@ def apply_contract_form(c, form):
 def validate_contract(c, is_new):
     errors = []
     if not c.client_last_name:
-        errors.append("Le nom du client est obligatoire.")
+        errors.append(_("Le nom du client est obligatoire."))
     if not (c.client_cin or c.client_passport):
-        errors.append("Renseignez le N° CIN ou le N° de passeport du client.")
+        errors.append(_("Renseignez le N° CIN ou le N° de passeport du client."))
     if not c.client_license_no:
-        errors.append("Le N° de permis de conduire du client est obligatoire.")
+        errors.append(_("Le N° de permis de conduire du client est obligatoire."))
     if not c.start_at or not c.end_at:
-        errors.append("Les dates et heures de départ et de retour sont obligatoires.")
+        errors.append(_("Les dates et heures de départ et de retour sont obligatoires."))
     elif c.end_at <= c.start_at:
-        errors.append("La date de retour doit être postérieure à la date de départ.")
+        errors.append(_("La date de retour doit être postérieure à la date de départ."))
     if c.km_start is not None and c.km_end is not None and c.km_end < c.km_start:
-        errors.append("Le kilométrage de retour ne peut pas être inférieur au kilométrage de départ.")
+        errors.append(_("Le kilométrage de retour ne peut pas être inférieur au kilométrage de départ."))
     if min(c.daily_rate, c.amount, c.advance, c.caution) < 0:
-        errors.append("Les montants ne peuvent pas être négatifs.")
+        errors.append(_("Les montants ne peuvent pas être négatifs."))
 
     vehicle = db.session.get(Vehicle, c.vehicle_id) if c.vehicle_id else None
     if vehicle is None:
-        errors.append("Sélectionnez un véhicule.")
+        errors.append(_("Sélectionnez un véhicule."))
     else:
         if is_new and vehicle.status != "disponible":
-            errors.append(f"Le véhicule {vehicle.plate} est {vehicle.status_label.lower()}.")
+            errors.append(_("Le véhicule {plate} est indisponible ({status}).", plate=vehicle.plate, status=_(vehicle.status_label)))
         if c.status == "en_cours" and c.start_at and c.end_at and c.end_at > c.start_at:
             overlap = Contract.query.filter(
                 Contract.vehicle_id == vehicle.id,
@@ -114,8 +115,8 @@ def validate_contract(c, is_new):
             other = overlap.first()
             if other:
                 errors.append(
-                    f"Le véhicule {vehicle.plate} est déjà loué sur cette période "
-                    f"(contrat {other.number})."
+                    _("Le véhicule {plate} est déjà loué sur cette période (contrat {number}).",
+                      plate=vehicle.plate, number=other.number)
                 )
 
     if c.client_id:
@@ -124,7 +125,7 @@ def validate_contract(c, is_new):
             if value:
                 owner = Client.query.filter(getattr(Client, field) == value).first()
                 if owner and owner.id != c.client_id:
-                    errors.append(f"Le N° {label} {value} appartient au client {owner.full_name}.")
+                    errors.append(_("Le N° {label} {value} appartient au client {name}.", label=_(label), value=value, name=owner.full_name))
     return errors
 
 
@@ -285,9 +286,9 @@ def create():
                 snapshot_vehicle(c)
                 update_vehicle_mileage(c)
             if save_new(c):
-                flash(f"Contrat {c.number} enregistré.", "success")
+                flash(_("Contrat {number} enregistré.", number=c.number), "success")
                 return redirect(url_for("contracts.view", contract_id=c.id))
-            flash("Impossible de générer un numéro de contrat unique, réessayez.", "danger")
+            flash(_("Impossible de générer un numéro de contrat unique, réessayez."), "danger")
     else:
         client_id = request.args.get("client_id", type=int)
         vehicle_id = request.args.get("vehicle_id", type=int)
@@ -300,7 +301,7 @@ def create():
             c.daily_rate = vehicle.daily_rate
             c.amount = vehicle.daily_rate * c.days
             c.km_start = vehicle.mileage
-    return render_form(c, "Nouveau contrat", source)
+    return render_form(c, _("Nouveau contrat"), source)
 
 
 @bp.route("/<int:contract_id>")
@@ -338,15 +339,15 @@ def edit(contract_id):
                 flash(e, "danger")
             draft = Contract(id=contract_id, number=c.number)
             apply_contract_form(draft, request.form)
-            return render_form(draft, f"Modifier le contrat {draft.number}")
+            return render_form(draft, _("Modifier le contrat {number}", number=draft.number))
         sync_client(c)
         if c.vehicle_id != previous_vehicle:
             snapshot_vehicle(c)
         update_vehicle_mileage(c)
         db.session.commit()
-        flash("Contrat mis à jour.", "success")
+        flash(_("Contrat mis à jour."), "success")
         return redirect(url_for("contracts.view", contract_id=c.id))
-    return render_form(c, f"Modifier le contrat {c.number}")
+    return render_form(c, _("Modifier le contrat {number}", number=c.number))
 
 
 @bp.route("/<int:contract_id>/dupliquer")
@@ -372,11 +373,11 @@ def duplicate(contract_id):
     c.changed_date = None
     c.source_id = source.id
     flash(
-        f"Duplication du contrat {source.number} : vérifiez les dates, le véhicule et les montants. "
-        "Un nouveau numéro sera attribué ; l'original reste inchangé.",
+        _("Duplication du contrat {number} : vérifiez les dates, le véhicule et les montants. "
+          "Un nouveau numéro sera attribué ; l'original reste inchangé.", number=source.number),
         "info",
     )
-    return render_form(c, f"Dupliquer le contrat {source.number}", source)
+    return render_form(c, _("Dupliquer le contrat {number}", number=source.number), source)
 
 
 @bp.route("/<int:contract_id>/cloturer", methods=["POST"])
@@ -385,7 +386,7 @@ def close(contract_id):
     km_end = form_int(request.form, "km_end")
     if km_end is not None:
         if c.km_start is not None and km_end < c.km_start:
-            flash("Le kilométrage de retour est inférieur au kilométrage de départ.", "danger")
+            flash(_("Le kilométrage de retour est inférieur au kilométrage de départ."), "danger")
             return redirect(url_for("contracts.view", contract_id=c.id))
         c.km_end = km_end
     fuel = form_str(request.form, "fuel_level")
@@ -394,7 +395,7 @@ def close(contract_id):
     c.status = "termine"
     update_vehicle_mileage(c)
     db.session.commit()
-    flash(f"Contrat {c.number} clôturé : véhicule restitué.", "success")
+    flash(_("Contrat {number} clôturé : véhicule restitué.", number=c.number), "success")
     return redirect(url_for("contracts.view", contract_id=c.id))
 
 
@@ -407,7 +408,7 @@ def delete(contract_id):
     Contract.query.filter_by(source_id=c.id).update({"source_id": None})
     db.session.delete(c)
     db.session.commit()
-    flash(f"Contrat {number} supprimé définitivement.", "success")
+    flash(_("Contrat {number} supprimé définitivement.", number=number), "success")
     return redirect(url_for("contracts.index"))
 
 
@@ -416,5 +417,5 @@ def cancel(contract_id):
     c = db.session.get(Contract, contract_id) or abort(404)
     c.status = "annule"
     db.session.commit()
-    flash(f"Contrat {c.number} annulé (il reste dans l'historique).", "warning")
+    flash(_("Contrat {number} annulé (il reste dans l'historique).", number=c.number), "warning")
     return redirect(url_for("contracts.view", contract_id=c.id))

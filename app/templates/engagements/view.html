@@ -1,23 +1,23 @@
 {% extends "base.html" %}
-{% block title %}Engagement {{ e.number }}{% endblock %}
+{% block title %}{{ _('Engagement {number}', number=e.number) }}{% endblock %}
 {% block content %}
 <div class="page-header no-print">
   <div>
-    <h1>Engagement {{ e.number }}</h1>
+    <h1>{{ _('Engagement {number}', number=e.number) }}</h1>
     <div class="subtitle">
-      {{ e.title }} · créé le {{ e.created_at|date_fr }}
-      {% if e.source %} · dupliqué depuis <a href="{{ url_for('engagements.view', engagement_id=e.source.id) }}">{{ e.source.number }}</a>{% endif %}
-      {% if e.contract_id %} · contrat <a href="{{ url_for('contracts.view', contract_id=e.contract_id) }}">{{ e.contract_number }}</a>{% endif %}
-      {% if e.client_id %} · <a href="{{ url_for('clients.view', client_id=e.client_id) }}">fiche client</a>{% endif %}
+      {{ e.title }} · {{ _('Créé le {date}', date=e.created_at|date_fr) }}
+      {% if e.source %} · {{ _('dupliqué depuis') }} <a href="{{ url_for('engagements.view', engagement_id=e.source.id) }}">{{ e.source.number }}</a>{% endif %}
+      {% if e.contract_id %} · {{ _('Contrat') }} <a href="{{ url_for('contracts.view', contract_id=e.contract_id) }}">{{ e.contract_number }}</a>{% endif %}
+      {% if e.client_id %} · <a href="{{ url_for('clients.view', client_id=e.client_id) }}">{{ _('fiche client') }}</a>{% endif %}
     </div>
   </div>
 </div>
 <div class="doc-toolbar no-print">
-  <button class="btn btn-primary" type="button" data-print><i class="bi bi-printer"></i> Imprimer (A4)</button>
-  <a class="btn btn-outline-primary" href="{{ url_for('engagements.pdf', engagement_id=e.id) }}"><i class="bi bi-download"></i> Télécharger le PDF</a>
-  <a class="btn btn-outline-secondary" href="{{ url_for('engagements.pdf', engagement_id=e.id, inline=1) }}" target="_blank"><i class="bi bi-file-earmark-pdf"></i> Ouvrir le PDF</a>
-  <a class="btn btn-outline-secondary" href="{{ url_for('engagements.edit', engagement_id=e.id) }}"><i class="bi bi-pencil"></i> Modifier</a>
-  <a class="btn btn-outline-secondary" href="{{ url_for('engagements.duplicate', engagement_id=e.id) }}"><i class="bi bi-copy"></i> Dupliquer</a>
+  <button class="btn btn-primary" type="button" data-print><i class="bi bi-printer"></i> {{ _('Imprimer (A4)') }}</button>
+  <a class="btn btn-outline-primary" href="{{ url_for('engagements.pdf', engagement_id=e.id) }}"><i class="bi bi-download"></i> {{ _('Télécharger le PDF') }}</a>
+  <a class="btn btn-outline-secondary" href="{{ url_for('engagements.pdf', engagement_id=e.id, inline=1) }}" target="_blank"><i class="bi bi-file-earmark-pdf"></i> {{ _('Ouvrir le PDF') }}</a>
+  <a class="btn btn-outline-secondary" href="{{ url_for('engagements.edit', engagement_id=e.id) }}"><i class="bi bi-pencil"></i> {{ _('Modifier') }}</a>
+  <a class="btn btn-outline-secondary" href="{{ url_for('engagements.duplicate', engagement_id=e.id) }}"><i class="bi bi-copy"></i> {{ _('Dupliquer') }}</a>
 </div>
 
 <div class="a4-wrapper">

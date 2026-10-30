@@ -4,6 +4,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from PIL import Image
 
 from ..extensions import db
+from ..i18n import _
 from ..logo import save_logo, logo_exists, remove_logo
 from ..models import Agency
 from ..utils import form_str, form_float
@@ -30,12 +31,12 @@ def agency():
         for field in ("contract_prefix", "engagement_prefix"):
             value = form_str(request.form, field).upper()
             if not re.fullmatch(r"[A-Z0-9]{1,10}", value):
-                errors.append("Les préfixes doivent contenir 1 à 10 lettres ou chiffres.")
+                errors.append(_("Les préfixes doivent contenir 1 à 10 lettres ou chiffres."))
             prefixes[field] = value
         if prefixes.get("contract_prefix") == prefixes.get("engagement_prefix"):
-            errors.append("Les préfixes des contrats et des engagements doivent être différents.")
+            errors.append(_("Les préfixes des contrats et des engagements doivent être différents."))
         if not agency.name:
-            errors.append("Le nom de l'agence est obligatoire.")
+            errors.append(_("Le nom de l'agence est obligatoire."))
         if errors:
             db.session.rollback()
             for e in sorted(set(errors)):
@@ -47,7 +48,7 @@ def agency():
                 save_logo(upload.stream)
             except (OSError, ValueError, Image.DecompressionBombError):
                 db.session.rollback()
-                flash("Le fichier du logo n'est pas une image valide (JPG ou PNG).", "danger")
+                flash(_("Le fichier du logo n'est pas une image valide (JPG ou PNG)."), "danger")
                 return redirect(url_for("settings.agency"))
         elif request.form.get("remove_logo") == "1" and logo_exists():
             remove_logo()
@@ -55,6 +56,6 @@ def agency():
         agency.engagement_prefix = prefixes["engagement_prefix"]
         agency.currency = agency.currency or "DH"
         db.session.commit()
-        flash("Paramètres de l'agence enregistrés.", "success")
+        flash(_("Paramètres de l'agence enregistrés."), "success")
         return redirect(url_for("settings.agency"))
     return render_template("settings/agency.html")

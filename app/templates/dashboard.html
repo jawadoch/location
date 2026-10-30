@@ -1,35 +1,35 @@
 {% extends "base.html" %}
 {% from "_macros.html" import contract_status, empty %}
-{% block title %}Tableau de bord{% endblock %}
+{% block title %}{{ _('Tableau de bord') }}{% endblock %}
 {% block content %}
 <div class="page-header">
   <div>
-    <h1>Tableau de bord</h1>
-    <div class="subtitle">{{ now.strftime('%d/%m/%Y %H:%M') }} · vue d'ensemble de l'activité</div>
+    <h1>{{ _('Tableau de bord') }}</h1>
+    <div class="subtitle">{{ now.strftime('%d/%m/%Y %H:%M') }} · {{ _("vue d'ensemble de l'activité") }}</div>
   </div>
   <div class="d-flex gap-2">
-    <a class="btn btn-outline-primary" href="{{ url_for('clients.create') }}"><i class="bi bi-person-plus"></i> Client</a>
-    <a class="btn btn-primary" href="{{ url_for('contracts.create') }}"><i class="bi bi-plus-lg"></i> Nouveau contrat</a>
+    <a class="btn btn-outline-primary" href="{{ url_for('clients.create') }}"><i class="bi bi-person-plus"></i> {{ _('Client') }}</a>
+    <a class="btn btn-primary" href="{{ url_for('contracts.create') }}"><i class="bi bi-plus-lg"></i> {{ _('Nouveau contrat') }}</a>
   </div>
 </div>
 
 <div class="row g-3 mb-4">
   {% set tiles = [
-    ('file-earmark-text', 'primary', stats.contracts_active, 'Contrats en cours', url_for('contracts.index', status='en_cours')),
-    ('car-front', 'success', stats.vehicles_available ~ ' / ' ~ stats.vehicles, 'Véhicules disponibles', url_for('vehicles.index')),
-    ('key', 'warning', stats.vehicles_rented, 'Véhicules actuellement loués', url_for('contracts.index', status='en_cours')),
-    ('people', 'info', stats.clients, 'Clients enregistrés', url_for('clients.index')),
-    ('calendar-check', 'primary', stats.contracts_month, 'Contrats ce mois-ci', url_for('contracts.index')),
-    ('cash-stack', 'success', stats.revenue_month|money, 'Chiffre d\'affaires du mois', url_for('contracts.index')),
-    ('hourglass-split', 'danger', stats.outstanding|money, 'Reste à encaisser', url_for('contracts.index')),
-    ('pen', 'secondary', stats.engagements, 'Engagements', url_for('engagements.index')),
+    ('file-earmark-text', 'primary', stats.contracts_active, _('Contrats en cours'), url_for('contracts.index', status='en_cours')),
+    ('car-front', 'success', stats.vehicles_available ~ ' / ' ~ stats.vehicles, _('Véhicules disponibles'), url_for('vehicles.index')),
+    ('key', 'warning', stats.vehicles_rented, _('Véhicules actuellement loués'), url_for('contracts.index', status='en_cours')),
+    ('people', 'info', stats.clients, _('Clients enregistrés'), url_for('clients.index')),
+    ('calendar-check', 'primary', stats.contracts_month, _('Contrats ce mois-ci'), url_for('contracts.index')),
+    ('cash-stack', 'success', stats.revenue_month|money, _("Chiffre d'affaires du mois"), url_for('contracts.index')),
+    ('hourglass-split', 'danger', stats.outstanding|money, _('Reste à encaisser'), url_for('contracts.index')),
+    ('pen', 'secondary', stats.engagements, _('Engagements'), url_for('engagements.index')),
   ] %}
   {% for icon, color, value, label, link in tiles %}
   <div class="col-sm-6 col-xl-3">
     <a href="{{ link }}" class="text-decoration-none text-reset">
       <div class="card stat-card h-100">
         <div class="icon bg-{{ color }}-subtle text-{{ color }}"><i class="bi bi-{{ icon }}"></i></div>
-        <div><div class="value">{{ value }}</div><div class="label">{{ label }}</div></div>
+        <div><div class="value" dir="ltr">{{ value }}</div><div class="label">{{ label }}</div></div>
       </div>
     </a>
   </div>
@@ -40,61 +40,61 @@
   <div class="col-xl-7">
     <div class="card h-100">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <span><i class="bi bi-clock-history"></i> Derniers contrats</span>
-        <a class="small" href="{{ url_for('contracts.index') }}">Tout voir</a>
+        <span><i class="bi bi-clock-history"></i> {{ _('Derniers contrats') }}</span>
+        <a class="small" href="{{ url_for('contracts.index') }}">{{ _('Tout voir') }}</a>
       </div>
       <div class="table-responsive">
         {% if recent_contracts %}
         <table class="table table-hover align-middle mb-0">
-          <thead><tr><th>N°</th><th>Client</th><th>Véhicule</th><th>Période</th><th>Statut</th></tr></thead>
+          <thead><tr><th>{{ _('N°') }}</th><th>{{ _('Client') }}</th><th>{{ _('Véhicule') }}</th><th>{{ _('Période') }}</th><th>{{ _('Statut') }}</th></tr></thead>
           <tbody>
           {% for c in recent_contracts %}
             <tr>
               <td><a href="{{ url_for('contracts.view', contract_id=c.id) }}" class="fw-semibold">{{ c.number }}</a></td>
               <td>{{ c.client_name }}</td>
-              <td>{{ c.vehicle_label }}<div class="small-muted">{{ c.vehicle_plate }}</div></td>
-              <td class="small">{{ c.start_at|date_fr }}<br>{{ c.end_at|date_fr }}</td>
+              <td>{{ c.vehicle_label }}<div class="small-muted">{{ (c.vehicle_plate)|ltr }}</div></td>
+              <td class="small">{{ c.start_at|date_fr|ltr }}<br>{{ c.end_at|date_fr|ltr }}</td>
               <td>{{ contract_status(c) }}</td>
             </tr>
           {% endfor %}
           </tbody>
         </table>
-        {% else %}{{ empty('Aucun contrat pour le moment.') }}{% endif %}
+        {% else %}{{ empty(_('Aucun contrat pour le moment.')) }}{% endif %}
       </div>
     </div>
   </div>
   <div class="col-xl-5 d-flex flex-column gap-3">
     <div class="card">
-      <div class="card-header"><i class="bi bi-arrow-return-left"></i> Retours prévus (3 prochains jours et retards)</div>
+      <div class="card-header"><i class="bi bi-arrow-return-left"></i> {{ _('Retours prévus (3 prochains jours et retards)') }}</div>
       <ul class="list-group list-group-flush">
         {% for c in upcoming_returns %}
           <li class="list-group-item d-flex justify-content-between align-items-center">
             <div>
-              <a href="{{ url_for('contracts.view', contract_id=c.id) }}" class="fw-semibold">{{ c.vehicle_label }} · {{ c.vehicle_plate }}</a>
-              <div class="small text-muted">{{ c.client_name }} · {{ c.client_phone }}</div>
+              <a href="{{ url_for('contracts.view', contract_id=c.id) }}" class="fw-semibold">{{ c.vehicle_label }} · {{ (c.vehicle_plate)|ltr }}</a>
+              <div class="small text-muted">{{ c.client_name }} · {{ (c.client_phone)|ltr }}</div>
             </div>
             <span class="badge {% if c.end_at < now %}text-bg-danger{% else %}text-bg-light{% endif %}">
-              {% if c.end_at < now %}En retard · {% endif %}{{ c.end_at|date_fr }}
+              {% if c.end_at < now %}{{ _('En retard') }} · {% endif %}{{ c.end_at|date_fr|ltr }}
             </span>
           </li>
         {% else %}
-          <li class="list-group-item text-muted small">Aucun retour prévu.</li>
+          <li class="list-group-item text-muted small">{{ _('Aucun retour prévu.') }}</li>
         {% endfor %}
       </ul>
     </div>
     <div class="card">
-      <div class="card-header"><i class="bi bi-shield-exclamation"></i> Assurances / visites techniques à renouveler (30 j)</div>
+      <div class="card-header"><i class="bi bi-shield-exclamation"></i> {{ _('Assurances / visites techniques à renouveler (30 j)') }}</div>
       <ul class="list-group list-group-flush">
         {% for v in expiring %}
           <li class="list-group-item">
-            <a href="{{ url_for('vehicles.view', vehicle_id=v.id) }}" class="fw-semibold">{{ v.label }} · {{ v.plate }}</a>
+            <a href="{{ url_for('vehicles.view', vehicle_id=v.id) }}" class="fw-semibold">{{ v.label }} · {{ (v.plate)|ltr }}</a>
             <div class="small">
-              {% if v.insurance_expiry %}<span class="{% if v.insurance_expiry < today %}text-danger fw-semibold{% endif %}">Assurance : {{ v.insurance_expiry|date_fr }}</span>{% endif %}
-              {% if v.technical_visit_expiry %} · <span class="{% if v.technical_visit_expiry < today %}text-danger fw-semibold{% endif %}">Visite : {{ v.technical_visit_expiry|date_fr }}</span>{% endif %}
+              {% if v.insurance_expiry %}<span class="{% if v.insurance_expiry < today %}text-danger fw-semibold{% endif %}">{{ _('Assurance') }} : {{ v.insurance_expiry|date_fr|ltr }}</span>{% endif %}
+              {% if v.technical_visit_expiry %} · <span class="{% if v.technical_visit_expiry < today %}text-danger fw-semibold{% endif %}">{{ _('Visite') }} : {{ v.technical_visit_expiry|date_fr|ltr }}</span>{% endif %}
             </div>
           </li>
         {% else %}
-          <li class="list-group-item text-muted small">Rien à signaler.</li>
+          <li class="list-group-item text-muted small">{{ _('Rien à signaler.') }}</li>
         {% endfor %}
       </ul>
     </div>

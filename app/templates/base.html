@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="fr">
+<html lang="{{ lang }}" dir="{{ 'rtl' if rtl else 'ltr' }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Tableau de bord{% endblock %} · {{ agency.name }}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap/bootstrap.min.css') }}">
+  <title>{% block title %}{{ _('Tableau de bord') }}{% endblock %} · {{ agency.name }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap/bootstrap.rtl.min.css' if rtl else 'vendor/bootstrap/bootstrap.min.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap-icons/bootstrap-icons.min.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/print.css') }}" media="print">
@@ -22,30 +22,34 @@
   <aside class="sidebar no-print" id="sidebar">
     <a class="brand" href="{{ url_for('main.dashboard') }}">
       <i class="bi bi-car-front-fill"></i>
-      <div><strong>{{ agency.name }}</strong><small>{{ agency.slogan }}</small></div>
+      <div><strong>{{ agency.name }}</strong><small>{{ agency.name_ar if rtl and agency.name_ar else agency.slogan }}</small></div>
     </a>
     <nav class="nav flex-column">
-      {{ nav_link('main.', url_for('main.dashboard'), 'speedometer2', 'Tableau de bord') }}
-      {{ nav_link('contracts.', url_for('contracts.index'), 'file-earmark-text', 'Contrats') }}
-      {{ nav_link('engagements.', url_for('engagements.index'), 'pen', 'Engagements') }}
-      {{ nav_link('clients.', url_for('clients.index'), 'people', 'Clients') }}
-      {{ nav_link('vehicles.', url_for('vehicles.index'), 'car-front', 'Véhicules') }}
-      {{ nav_link('settings.', url_for('settings.agency'), 'gear', 'Paramètres') }}
+      {{ nav_link('main.', url_for('main.dashboard'), 'speedometer2', _('Tableau de bord')) }}
+      {{ nav_link('contracts.', url_for('contracts.index'), 'file-earmark-text', _('Contrats')) }}
+      {{ nav_link('engagements.', url_for('engagements.index'), 'pen', _('Engagements')) }}
+      {{ nav_link('clients.', url_for('clients.index'), 'people', _('Clients')) }}
+      {{ nav_link('vehicles.', url_for('vehicles.index'), 'car-front', _('Véhicules')) }}
+      {{ nav_link('settings.', url_for('settings.agency'), 'gear', _('Paramètres')) }}
     </nav>
     <div class="sidebar-actions">
-      <a class="btn btn-warning w-100 mb-2" href="{{ url_for('contracts.create') }}"><i class="bi bi-plus-lg"></i> Nouveau contrat</a>
-      <a class="btn btn-outline-light w-100" href="{{ url_for('engagements.create') }}"><i class="bi bi-plus-lg"></i> Nouvel engagement</a>
+      <a class="btn btn-warning w-100 mb-2" href="{{ url_for('contracts.create') }}"><i class="bi bi-plus-lg"></i> {{ _('Nouveau contrat') }}</a>
+      <a class="btn btn-outline-light w-100" href="{{ url_for('engagements.create') }}"><i class="bi bi-plus-lg"></i> {{ _('Nouvel engagement') }}</a>
     </div>
   </aside>
 
   <div class="main">
     <header class="topbar no-print">
-      <button class="btn btn-light d-lg-none" type="button" id="sidebarToggle" aria-label="Menu"><i class="bi bi-list"></i></button>
+      <button class="btn btn-light d-lg-none" type="button" id="sidebarToggle" aria-label="{{ _('Menu') }}"><i class="bi bi-list"></i></button>
       <form class="topbar-search" action="{{ url_for('contracts.index') }}" method="get">
         <i class="bi bi-search"></i>
-        <input class="form-control" type="search" name="q" placeholder="Rechercher un contrat : nom, CIN, N°, immatriculation…">
+        <input class="form-control" type="search" name="q" placeholder="{{ _('Rechercher un contrat : nom, CIN, N°, immatriculation…') }}">
       </form>
-      <span class="text-muted small d-none d-md-inline">{{ agency.city }}</span>
+      <div class="btn-group lang-switch" role="group" aria-label="{{ _('Langue') }}">
+        {% for code, label in languages.items() %}
+          <a class="btn btn-sm {{ 'btn-primary' if code == lang else 'btn-outline-primary' }}" href="{{ url_for('main.set_language', code=code) }}" lang="{{ code }}">{{ label }}</a>
+        {% endfor %}
+      </div>
     </header>
 
     <main class="content">
@@ -53,7 +57,7 @@
         {% for category, message in messages %}
           <div class="alert alert-{{ category }} alert-dismissible fade show no-print" role="alert">
             {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ _('Fermer') }}"></button>
           </div>
         {% endfor %}
       {% endwith %}
@@ -62,6 +66,7 @@
   </div>
 </div>
 
+<script>window.I18N = {{ js_texts|tojson }};</script>
 <script src="{{ url_for('static', filename='vendor/bootstrap/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 {% block scripts %}{% endblock %}

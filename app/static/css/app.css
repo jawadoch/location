@@ -52,6 +52,23 @@ body { background: var(--bg); color: #1d2433; }
   .content { padding: 1rem; }
 }
 
+.lang-switch { margin-inline-start: auto; }
+
+/* ---------- Arabe : interface de droite à gauche ---------- */
+[dir="rtl"] body { font-family: "Segoe UI", Tahoma, Arial, sans-serif; }
+[dir="rtl"] .sidebar { inset: 0 0 0 auto; }
+[dir="rtl"] .main { margin-left: 0; margin-right: var(--sidebar-w); }
+[dir="rtl"] .topbar-search i { left: auto; right: .8rem; }
+[dir="rtl"] .topbar-search input { padding-left: .75rem; padding-right: 2.2rem; }
+[dir="rtl"] .autocomplete-list button { text-align: right; }
+[dir="rtl"] .table thead th { letter-spacing: 0; }
+[dir="rtl"] .form-section-title { letter-spacing: 0; }
+@media (max-width: 991.98px) {
+  [dir="rtl"] .sidebar { transform: translateX(100%); }
+  [dir="rtl"] .sidebar.open { transform: none; }
+  [dir="rtl"] .main { margin-right: 0; }
+}
+
 /* ---------- Composants ---------- */
 .page-header { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
 .page-header h1 { font-size: 1.5rem; margin: 0; font-weight: 700; }
@@ -86,7 +103,7 @@ dl.info dd { margin-bottom: .6rem; }
   background: #fff; border: 1px solid #dee2e6; border-radius: .5rem;
   box-shadow: 0 8px 24px rgba(0,0,0,.12); max-height: 320px; overflow-y: auto;
 }
-.autocomplete-list button { display: block; width: 100%; text-align: left; border: 0; background: none; padding: .55rem .8rem; border-bottom: 1px solid #f1f3f6; }
+.autocomplete-list button { display: block; width: 100%; text-align: start; border: 0; background: none; padding: .55rem .8rem; border-bottom: 1px solid #f1f3f6; }
 .autocomplete-list button:hover, .autocomplete-list button.active { background: #eef3fb; }
 .autocomplete-list small { color: #6b7385; }
 

@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort, current_app
 
 from ..extensions import db
+from ..i18n import _
 from ..models import Vehicle, Contract, Engagement, VEHICLE_STATUSES, FUEL_TYPES
 from ..utils import form_str, form_date, form_float, form_int, search_filter
 
@@ -27,13 +28,13 @@ def apply_vehicle_form(vehicle, form):
 def validate_vehicle(vehicle):
     errors = []
     if not vehicle.brand or not vehicle.model:
-        errors.append("La marque et le modèle sont obligatoires.")
+        errors.append(_("La marque et le modèle sont obligatoires."))
     if not vehicle.plate:
-        errors.append("L'immatriculation est obligatoire.")
+        errors.append(_("L'immatriculation est obligatoire."))
     elif Vehicle.query.filter(Vehicle.plate == vehicle.plate, Vehicle.id != vehicle.id).first():
-        errors.append("Un véhicule avec cette immatriculation existe déjà.")
+        errors.append(_("Un véhicule avec cette immatriculation existe déjà."))
     if vehicle.daily_rate is None or vehicle.daily_rate < 0:
-        errors.append("Le tarif journalier doit être positif.")
+        errors.append(_("Le tarif journalier doit être positif."))
     return errors
 
 
@@ -70,7 +71,7 @@ def create():
         if not errors:
             db.session.add(vehicle)
             db.session.commit()
-            flash("Véhicule enregistré.", "success")
+            flash(_("Véhicule enregistré."), "success")
             return redirect(url_for("vehicles.view", vehicle_id=vehicle.id))
         for e in errors:
             flash(e, "danger")
@@ -93,7 +94,7 @@ def edit(vehicle_id):
             errors = validate_vehicle(vehicle)
         if not errors:
             db.session.commit()
-            flash("Véhicule mis à jour.", "success")
+            flash(_("Véhicule mis à jour."), "success")
             return redirect(url_for("vehicles.view", vehicle_id=vehicle.id))
         db.session.rollback()
         for e in errors:
@@ -112,8 +113,8 @@ def delete(vehicle_id):
     Engagement.query.filter_by(vehicle_id=vehicle.id).update({"vehicle_id": None})
     db.session.delete(vehicle)
     db.session.commit()
-    msg = f"Véhicule {label} supprimé."
+    msg = _("Véhicule {label} supprimé.", label=label)
     if kept:
-        msg += f" Ses {kept} contrat(s) restent dans l'historique."
+        msg += " " + _("Ses {n} contrat(s) restent dans l'historique.", n=kept)
     flash(msg, "success")
     return redirect(url_for("vehicles.index"))

@@ -1,44 +1,44 @@
 {% extends "base.html" %}
 {% from "_macros.html" import pager, empty, delete_button %}
-{% block title %}Clients{% endblock %}
+{% block title %}{{ _('Clients') }}{% endblock %}
 {% block content %}
 <div class="page-header">
-  <div><h1>Clients</h1><div class="subtitle">{{ pagination.total }} client(s)</div></div>
-  <a class="btn btn-primary" href="{{ url_for('clients.create') }}"><i class="bi bi-person-plus"></i> Nouveau client</a>
+  <div><h1>{{ _('Clients') }}</h1><div class="subtitle">{{ _('{n} client(s)', n=pagination.total) }}</div></div>
+  <a class="btn btn-primary" href="{{ url_for('clients.create') }}"><i class="bi bi-person-plus"></i> {{ _('Nouveau client') }}</a>
 </div>
 
 <div class="card">
   <div class="card-body border-bottom">
     <form class="row g-2" method="get">
       <div class="col-md-8 col-lg-6">
-        <input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Nom, prénom, CIN, passeport ou téléphone" autofocus>
+        <input class="form-control" type="search" name="q" value="{{ q }}" placeholder="{{ _('Nom, prénom, CIN, passeport ou téléphone') }}" autofocus>
       </div>
-      <div class="col-auto"><button class="btn btn-primary"><i class="bi bi-search"></i> Rechercher</button></div>
-      {% if q %}<div class="col-auto"><a class="btn btn-light" href="{{ url_for('clients.index') }}">Réinitialiser</a></div>{% endif %}
+      <div class="col-auto"><button class="btn btn-primary"><i class="bi bi-search"></i> {{ _('Rechercher') }}</button></div>
+      {% if q %}<div class="col-auto"><a class="btn btn-light" href="{{ url_for('clients.index') }}">{{ _('Réinitialiser') }}</a></div>{% endif %}
     </form>
   </div>
   <div class="table-responsive">
     {% if pagination.items %}
     <table class="table table-hover align-middle mb-0">
-      <thead><tr><th>Nom et prénom</th><th>CIN / Passeport</th><th>Permis</th><th>Téléphone</th><th>Ville</th><th class="text-end">Actions</th></tr></thead>
+      <thead><tr><th>{{ _('Nom et prénom') }}</th><th>{{ _('CIN / Passeport') }}</th><th>{{ _('Permis') }}</th><th>{{ _('Téléphone') }}</th><th>{{ _('Ville') }}</th><th class="text-end">{{ _('Actions') }}</th></tr></thead>
       <tbody>
       {% for c in pagination.items %}
         <tr>
           <td><a class="fw-semibold" href="{{ url_for('clients.view', client_id=c.id) }}">{{ c.full_name }}</a><div class="small-muted">{{ c.nationality }}</div></td>
           <td>{{ c.cin or '—' }}<div class="small-muted">{{ c.passport_no or '' }}</div></td>
           <td>{{ c.license_no or '—' }}</td>
-          <td>{{ c.phone or '—' }}</td>
+          <td><span dir="ltr">{{ c.phone or '—' }}</span></td>
           <td>{{ c.city or '—' }}</td>
           <td class="text-end text-nowrap">
-            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('contracts.create', client_id=c.id) }}" title="Nouveau contrat"><i class="bi bi-file-earmark-plus"></i></a>
-            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('clients.edit', client_id=c.id) }}" title="Modifier"><i class="bi bi-pencil"></i></a>
-            {{ delete_button(url_for('clients.delete', client_id=c.id), "Supprimer définitivement le client " ~ c.full_name ~ " ? Ses contrats et engagements restent dans l'historique.", small=true) }}
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('contracts.create', client_id=c.id) }}" title="{{ _('Nouveau contrat') }}"><i class="bi bi-file-earmark-plus"></i></a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('clients.edit', client_id=c.id) }}" title="{{ _('Modifier') }}"><i class="bi bi-pencil"></i></a>
+            {{ delete_button(url_for('clients.delete', client_id=c.id), _("Supprimer définitivement le client {name} ? Ses contrats et engagements restent dans l'historique.", name=c.full_name), small=true) }}
           </td>
         </tr>
       {% endfor %}
       </tbody>
     </table>
-    {% else %}{{ empty('Aucun client trouvé.', 'people') }}{% endif %}
+    {% else %}{{ empty(_('Aucun client trouvé.'), 'people') }}{% endif %}
   </div>
 </div>
 {{ pager(pagination, 'clients.index') }}

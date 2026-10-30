@@ -4,19 +4,19 @@
     <ul class="pagination pagination-sm justify-content-center mb-0">
       {% set args = request.args.to_dict() %}
       {% if pagination.has_prev %}
-        {% set _ = args.update({'page': pagination.prev_num}) %}
+        {% set _ignored = args.update({'page': pagination.prev_num}) %}
         <li class="page-item"><a class="page-link" href="{{ url_for(endpoint, **args) }}">&laquo;</a></li>
       {% endif %}
       {% for p in pagination.iter_pages() %}
         {% if p %}
-          {% set _ = args.update({'page': p}) %}
+          {% set _ignored = args.update({'page': p}) %}
           <li class="page-item {% if p == pagination.page %}active{% endif %}"><a class="page-link" href="{{ url_for(endpoint, **args) }}">{{ p }}</a></li>
         {% else %}
           <li class="page-item disabled"><span class="page-link">…</span></li>
         {% endif %}
       {% endfor %}
       {% if pagination.has_next %}
-        {% set _ = args.update({'page': pagination.next_num}) %}
+        {% set _ignored = args.update({'page': pagination.next_num}) %}
         <li class="page-item"><a class="page-link" href="{{ url_for(endpoint, **args) }}">&raquo;</a></li>
       {% endif %}
     </ul>
@@ -26,15 +26,15 @@
 
 {% macro contract_status(c) -%}
   {% set colors = {'en_cours': 'primary', 'termine': 'success', 'annule': 'secondary'} %}
-  <span class="badge text-bg-{{ colors.get(c.status, 'light') }}">{{ c.status_label }}</span>
+  <span class="badge text-bg-{{ colors.get(c.status, 'light') }}">{{ _(c.status_label) }}</span>
 {%- endmacro %}
 
 {% macro vehicle_status(v) -%}
   {% if v.status == 'disponible' and v.is_rented %}
-    <span class="badge text-bg-warning">Loué</span>
+    <span class="badge text-bg-warning">{{ _('Loué') }}</span>
   {% else %}
     {% set colors = {'disponible': 'success', 'maintenance': 'warning', 'hors_service': 'secondary'} %}
-    <span class="badge text-bg-{{ colors.get(v.status, 'light') }}">{{ v.status_label }}</span>
+    <span class="badge text-bg-{{ colors.get(v.status, 'light') }}">{{ _(v.status_label) }}</span>
   {% endif %}
 {%- endmacro %}
 
@@ -48,7 +48,7 @@
 {% macro delete_button(url, message, label='', small=false) -%}
   <form method="post" action="{{ url }}" class="d-inline" data-confirm="{{ message }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <button class="btn {{ 'btn-sm' if small }} btn-outline-danger" title="Supprimer"><i class="bi bi-trash"></i>{% if label %} {{ label }}{% endif %}</button>
+    <button class="btn {{ 'btn-sm' if small }} btn-outline-danger" title="{{ _('Supprimer') }}"><i class="bi bi-trash"></i>{% if label %} {{ label }}{% endif %}</button>
   </form>
 {%- endmacro %}
 

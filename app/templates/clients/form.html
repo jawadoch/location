@@ -1,45 +1,45 @@
 {% extends "base.html" %}
 {% from "_macros.html" import field %}
-{% block title %}{{ 'Modifier le client' if client.id else 'Nouveau client' }}{% endblock %}
+{% block title %}{{ _('Modifier le client') if client.id else _('Nouveau client') }}{% endblock %}
 {% block content %}
 <div class="page-header">
-  <h1>{{ 'Modifier : ' ~ client.full_name if client.id else 'Nouveau client' }}</h1>
-  <a class="btn btn-light" href="{{ url_for('clients.view', client_id=client.id) if client.id else url_for('clients.index') }}"><i class="bi bi-arrow-left"></i> Retour</a>
+  <h1>{{ _('Modifier : {name}', name=client.full_name) if client.id else _('Nouveau client') }}</h1>
+  <a class="btn btn-light" href="{{ url_for('clients.view', client_id=client.id) if client.id else url_for('clients.index') }}"><i class="bi bi-arrow-left"></i> {{ _('Retour') }}</a>
 </div>
 <form method="post" class="card">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <div class="card-body">
-    <div class="form-section-title">Identité</div>
+    <div class="form-section-title">{{ _('Identité') }}</div>
     <div class="row g-3 mb-4">
-      {{ field('last_name', 'Nom', client.last_name, required=true, cls='col-md-4') }}
-      {{ field('first_name', 'Prénom', client.first_name, cls='col-md-4') }}
-      {{ field('nationality', 'Nationalité', client.nationality, cls='col-md-4') }}
-      {{ field('birth_date', 'Date de naissance', client.birth_date|iso, type='date', cls='col-md-4') }}
-      {{ field('cin', 'N° CIN', client.cin, cls='col-md-4') }}
-      {{ field('cin_valid_until', 'CIN valable jusqu\'au', client.cin_valid_until|iso, type='date', cls='col-md-4') }}
-      {{ field('passport_no', 'N° passeport', client.passport_no, cls='col-md-4') }}
-      {{ field('passport_issued_at', 'Passeport délivré à', client.passport_issued_at, cls='col-md-4') }}
+      {{ field('last_name', _('Nom'), client.last_name, required=true, cls='col-md-4') }}
+      {{ field('first_name', _('Prénom'), client.first_name, cls='col-md-4') }}
+      {{ field('nationality', _('Nationalité'), client.nationality, cls='col-md-4') }}
+      {{ field('birth_date', _('Date de naissance'), client.birth_date|iso, type='date', cls='col-md-4') }}
+      {{ field('cin', _('N° CIN'), client.cin, cls='col-md-4') }}
+      {{ field('cin_valid_until', _("CIN valable jusqu'au"), client.cin_valid_until|iso, type='date', cls='col-md-4') }}
+      {{ field('passport_no', _('N° passeport'), client.passport_no, cls='col-md-4') }}
+      {{ field('passport_issued_at', _('Passeport délivré à'), client.passport_issued_at, cls='col-md-4') }}
     </div>
-    <div class="form-section-title">Permis de conduire</div>
+    <div class="form-section-title">{{ _('Permis de conduire') }}</div>
     <div class="row g-3 mb-4">
-      {{ field('license_no', 'N° permis', client.license_no, cls='col-md-4') }}
-      {{ field('license_date', 'Délivré le', client.license_date|iso, type='date', cls='col-md-4') }}
-      {{ field('license_place', 'Délivré à', client.license_place, cls='col-md-4') }}
+      {{ field('license_no', _('N° permis'), client.license_no, cls='col-md-4') }}
+      {{ field('license_date', _('Délivré le'), client.license_date|iso, type='date', cls='col-md-4') }}
+      {{ field('license_place', _('Délivré à'), client.license_place, cls='col-md-4') }}
     </div>
-    <div class="form-section-title">Coordonnées</div>
+    <div class="form-section-title">{{ _('Coordonnées') }}</div>
     <div class="row g-3">
-      {{ field('address', 'Adresse au Maroc', client.address, cls='col-md-8') }}
-      {{ field('city', 'Ville', client.city, cls='col-md-4') }}
-      {{ field('phone', 'Téléphone (GSM)', client.phone, type='tel', cls='col-md-4') }}
-      {{ field('email', 'E-mail', client.email, type='email', cls='col-md-4') }}
+      {{ field('address', _('Adresse au Maroc'), client.address, cls='col-md-8') }}
+      {{ field('city', _('Ville'), client.city, cls='col-md-4') }}
+      {{ field('phone', _('Téléphone (GSM)'), client.phone, type='tel', cls='col-md-4') }}
+      {{ field('email', _('E-mail'), client.email, type='email', cls='col-md-4') }}
       <div class="col-12">
-        <label class="form-label" for="notes">Notes</label>
-        <textarea class="form-control" id="notes" name="notes" rows="2">{{ client.notes or '' }}</textarea>
+        <label class="form-label" for="notes">{{ _('Notes') }}</label>
+        <textarea class="form-control" id="notes" name="notes" rows="2" dir="auto">{{ client.notes or '' }}</textarea>
       </div>
     </div>
   </div>
   <div class="card-footer bg-white text-end">
-    <button class="btn btn-primary"><i class="bi bi-check-lg"></i> Enregistrer</button>
+    <button class="btn btn-primary"><i class="bi bi-check-lg"></i> {{ _('Enregistrer') }}</button>
   </div>
 </form>
 {% endblock %}

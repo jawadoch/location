@@ -6,7 +6,7 @@
   <div class="pill-row"><div class="pill"><span class="ar">{{ ar }}</span>{{ fr }}</div><div class="pill-val">{{ value if value else '' }}</div></div>
 {%- endmacro %}
 
-<div class="a4" id="document">
+<div class="a4" id="document" dir="ltr" lang="fr">
   <div class="doc-head">
     <div>
       {% if logo_url %}<img class="doc-logo" src="{{ logo_url }}" alt="{{ agency.name }}">

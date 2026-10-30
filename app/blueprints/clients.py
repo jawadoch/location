@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort, current_app
 
 from ..extensions import db
+from ..i18n import _
 from ..models import Client, Contract, Engagement
 from ..utils import form_str, form_date, search_filter
 
@@ -42,15 +43,15 @@ def apply_client_form(client, form):
 def validate_client(client):
     errors = []
     if not client.last_name:
-        errors.append("Le nom du client est obligatoire.")
+        errors.append(_("Le nom du client est obligatoire."))
     if not (client.cin or client.passport_no):
-        errors.append("Renseignez au moins le N° CIN ou le N° de passeport.")
+        errors.append(_("Renseignez au moins le N° CIN ou le N° de passeport."))
     for field, label in (("cin", "CIN"), ("passport_no", "passeport")):
         value = getattr(client, field)
         if value:
             other = Client.query.filter(getattr(Client, field) == value, Client.id != client.id).first()
             if other:
-                errors.append(f"Un client avec ce N° {label} existe déjà : {other.full_name}.")
+                errors.append(_("Un client avec ce N° {label} existe déjà : {name}.", label=_(label), name=other.full_name))
     return errors
 
 
@@ -76,7 +77,7 @@ def create():
         else:
             db.session.add(client)
             db.session.commit()
-            flash("Client enregistré.", "success")
+            flash(_("Client enregistré."), "success")
             next_url = request.args.get("next")
             if next_url == "contrat":
                 return redirect(url_for("contracts.create", client_id=client.id))
@@ -107,7 +108,7 @@ def edit(client_id):
             apply_client_form(client, request.form)
         else:
             db.session.commit()
-            flash("Fiche client mise à jour.", "success")
+            flash(_("Fiche client mise à jour."), "success")
             return redirect(url_for("clients.view", client_id=client.id))
     return render_template("clients/form.html", client=client)
 
@@ -121,8 +122,8 @@ def delete(client_id):
     kept += Engagement.query.filter_by(client_id=client.id).update({"client_id": None})
     db.session.delete(client)
     db.session.commit()
-    msg = f"Client {name} supprimé."
+    msg = _("Client {name} supprimé.", name=name)
     if kept:
-        msg += f" Ses {kept} document(s) restent dans l'historique."
+        msg += " " + _("Ses {n} document(s) restent dans l'historique.", n=kept)
     flash(msg, "success")
     return redirect(url_for("clients.index"))

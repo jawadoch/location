@@ -10,6 +10,20 @@ sous Windows).
 
 ---
 
+## Langue de l'interface : arabe et français
+
+L'interface s'ouvre **en arabe** (de droite à gauche). Les boutons **عربي / Français** en haut
+de chaque page permettent de changer de langue ; le choix est mémorisé sur le PC.
+
+- Les contrats imprimés restent **bilingues** (français + arabe), comme le modèle papier.
+- Les engagements sont rédigés en arabe (modèles fournis) ; un modèle écrit en français
+  produit un engagement en français.
+- Pour démarrer en français par défaut : variable d'environnement `LANGUE=fr`.
+- Les traductions sont dans `app/translations_ar.py` (clé = texte français). Le test
+  `test_all_texts_translated_to_arabic` échoue si un texte de l'interface n'a pas de traduction.
+
+---
+
 ## Installation chez le client (sans aucune commande)
 
 L'utilisateur final n'a jamais besoin de taper de commande : il double-clique sur l'icône

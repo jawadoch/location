@@ -367,3 +367,65 @@ def test_logo_upload_route_and_removal(client, app, tmp_path):
     assert uploaded.status_code == 200 and len(uploaded.data) != default_size
     client.post("/parametres/", data={**base, "remove_logo": "1"}, content_type="multipart/form-data")
     assert client.get("/logo.png").status_code == 404
+
+
+# ---------------------------------------------------------------- interface bilingue
+
+def test_all_texts_translated_to_arabic(app):
+    import re
+    from app.i18n_keys import all_keys
+    from app.translations_ar import AR
+
+    with app.app_context():
+        keys = all_keys()
+    missing = sorted(k for k in keys if k not in AR)
+    assert not missing, f"Textes sans traduction arabe : {missing}"
+    for key in keys:
+        assert set(re.findall(r"\{(\w+)\}", key)) == set(re.findall(r"\{(\w+)\}", AR[key])), key
+
+
+ALL_PAGES = ["/", "/clients/", "/clients/nouveau", "/vehicules/", "/vehicules/nouveau",
+             "/contrats/", "/contrats/nouveau", "/engagements/", "/engagements/nouveau",
+             "/engagements/modeles", "/engagements/modeles/nouveau", "/parametres/"]
+
+
+def test_arabic_interface(client, app, vehicle):
+    client.set_cookie("lang", "ar")
+    client.post("/contrats/nouveau", data=contract_form(vehicle))
+    pages = ALL_PAGES + ["/contrats/1", "/contrats/1/modifier", "/contrats/1/dupliquer",
+                         "/clients/1", "/clients/1/modifier", f"/vehicules/{vehicle}", f"/vehicules/{vehicle}/modifier"]
+    for url in pages:
+        resp = client.get(url)
+        assert resp.status_code == 200, url
+        assert b'dir="rtl"' in resp.data and b"bootstrap.rtl.min.css" in resp.data, url
+    assert "لوحة القيادة".encode() in client.get("/").data
+    assert "عقد جديد".encode() in client.get("/contrats/").data
+    # les messages du serveur sont aussi traduits
+    resp = client.post("/contrats/nouveau", data=contract_form(vehicle, end_at="2026-11-01T10:00"), follow_redirects=True)
+    assert "يجب أن يكون تاريخ العودة بعد تاريخ المغادرة".encode() in resp.data
+    # la feuille du contrat reste bilingue et de gauche à droite
+    assert b'id="document" dir="ltr"' in client.get("/contrats/1").data
+
+
+def test_language_switch(client):
+    resp = client.get("/langue/fr", headers={"Referer": "http://localhost/clients/"})
+    assert resp.status_code == 302 and resp.headers["Location"].endswith("/clients/")
+    assert "lang=fr" in resp.headers["Set-Cookie"]
+    page = client.get("/")
+    assert b'dir="ltr"' in page.data and b"Tableau de bord" in page.data
+    client.get("/langue/ar")
+    assert b'dir="rtl"' in client.get("/").data
+    # code inconnu ou redirection externe : ignorés
+    resp = client.get("/langue/xx", headers={"Referer": "https://exemple.com/"})
+    assert resp.headers["Location"].endswith("/") and "exemple.com" not in resp.headers["Location"]
+
+
+def test_default_language_is_arabic():
+    from app import create_app
+    from app.config import TestConfig
+
+    class ArabicConfig(TestConfig):
+        DEFAULT_LANGUAGE = "ar"
+
+    app = create_app(ArabicConfig)
+    assert b'dir="rtl"' in app.test_client().get("/").data

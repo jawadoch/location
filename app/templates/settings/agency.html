@@ -1,30 +1,30 @@
 {% extends "base.html" %}
 {% from "_macros.html" import field %}
-{% block title %}Paramètres{% endblock %}
+{% block title %}{{ _('Paramètres') }}{% endblock %}
 {% block content %}
 <div class="page-header">
-  <div><h1>Paramètres de l'agence</h1><div class="subtitle">Ces informations apparaissent sur les contrats et engagements</div></div>
-  <a class="btn btn-outline-primary" href="{{ url_for('engagements.templates') }}"><i class="bi bi-journal-text"></i> Modèles d'engagement</a>
+  <div><h1>{{ _("Paramètres de l'agence") }}</h1><div class="subtitle">{{ _('Ces informations apparaissent sur les contrats et engagements') }}</div></div>
+  <a class="btn btn-outline-primary" href="{{ url_for('engagements.templates') }}"><i class="bi bi-journal-text"></i> {{ _("Modèles d'engagement") }}</a>
 </div>
 <form method="post" enctype="multipart/form-data">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <div class="row g-3">
     <div class="col-12">
       <div class="card">
-        <div class="card-header">Logo (affiché sur les contrats et les engagements)</div>
+        <div class="card-header">{{ _('Logo (affiché sur les contrats et les engagements)') }}</div>
         <div class="card-body row g-3 align-items-center">
           <div class="col-md-4">
             {% if logo_url %}<img src="{{ logo_url }}" alt="Logo" class="img-fluid border rounded p-2 bg-white" style="max-height:110px">
-            {% else %}<div class="text-muted small">Aucun logo : le nom de l'agence est affiché à la place.</div>{% endif %}
+            {% else %}<div class="text-muted small">{{ _("Aucun logo : le nom de l'agence est affiché à la place.") }}</div>{% endif %}
           </div>
           <div class="col-md-8">
-            <label class="form-label" for="logo">Remplacer le logo (JPG ou PNG)</label>
+            <label class="form-label" for="logo">{{ _('Remplacer le logo (JPG ou PNG)') }}</label>
             <input class="form-control" type="file" id="logo" name="logo" accept="image/png,image/jpeg">
-            <div class="form-text">L'image est recadrée automatiquement et son fond est blanchi pour l'impression.</div>
+            <div class="form-text">{{ _("L'image est recadrée automatiquement et son fond est blanchi pour l'impression.") }}</div>
             {% if logo_url %}
             <div class="form-check mt-2">
               <input class="form-check-input" type="checkbox" id="remove_logo" name="remove_logo" value="1">
-              <label class="form-check-label" for="remove_logo">Supprimer le logo</label>
+              <label class="form-check-label" for="remove_logo">{{ _('Supprimer le logo') }}</label>
             </div>
             {% endif %}
           </div>
@@ -33,49 +33,49 @@
     </div>
     <div class="col-xl-6">
       <div class="card h-100">
-        <div class="card-header">Identité et coordonnées</div>
+        <div class="card-header">{{ _('Identité et coordonnées') }}</div>
         <div class="card-body row g-3">
-          {{ field('name', 'Nom de l\'agence', agency.name, required=true) }}
-          {{ field('name_ar', 'Nom / mention en arabe', agency.name_ar, attrs='dir="rtl"') }}
-          {{ field('slogan', 'Activité / slogan', agency.slogan, cls='col-12') }}
-          {{ field('address', 'Adresse', agency.address, cls='col-md-8') }}
-          {{ field('city', 'Ville', agency.city, cls='col-md-4') }}
-          {{ field('phone', 'Téléphone(s)', agency.phone) }}
-          {{ field('email', 'E-mail', agency.email, type='email') }}
-          {{ field('website', 'Site web', agency.website, cls='col-12') }}
+          {{ field('name', _("Nom de l'agence"), agency.name, required=true) }}
+          {{ field('name_ar', _('Nom / mention en arabe'), agency.name_ar, attrs='dir="rtl"') }}
+          {{ field('slogan', _('Activité / slogan'), agency.slogan, cls='col-12', attrs='dir="auto"') }}
+          {{ field('address', _('Adresse'), agency.address, cls='col-md-8', attrs='dir="auto"') }}
+          {{ field('city', _('Ville'), agency.city, cls='col-md-4', attrs='dir="auto"') }}
+          {{ field('phone', _('Téléphone(s)'), agency.phone, attrs='dir="ltr"') }}
+          {{ field('email', _('E-mail'), agency.email, type='email') }}
+          {{ field('website', _('Site web'), agency.website, cls='col-12', attrs='dir="ltr"') }}
         </div>
       </div>
     </div>
     <div class="col-xl-6">
       <div class="card h-100">
-        <div class="card-header">Informations légales et numérotation</div>
+        <div class="card-header">{{ _('Informations légales et numérotation') }}</div>
         <div class="card-body row g-3">
-          {{ field('ice', 'ICE', agency.ice) }}
-          {{ field('rc', 'Registre de commerce (RC)', agency.rc) }}
-          {{ field('tax_id', 'Identifiant fiscal (IF)', agency.tax_id) }}
-          {{ field('patente', 'Patente', agency.patente) }}
-          {{ field('contract_prefix', 'Préfixe des contrats', agency.contract_prefix, required=true, cls='col-md-4', attrs='maxlength="10"') }}
-          {{ field('engagement_prefix', 'Préfixe des engagements', agency.engagement_prefix, required=true, cls='col-md-4', attrs='maxlength="10"') }}
-          {{ field('currency', 'Devise', agency.currency, cls='col-md-4') }}
-          {{ field('default_caution', 'Caution par défaut', agency.default_caution, type='number', cls='col-md-6', attrs='step="0.01" min="0"') }}
-          <div class="col-12 small text-muted">Format des numéros : <code>{{ agency.contract_prefix }}-{{ 'AAAA' }}-0001</code>. Les documents existants gardent leur numéro.</div>
+          {{ field('ice', _('ICE'), agency.ice) }}
+          {{ field('rc', _('Registre de commerce (RC)'), agency.rc) }}
+          {{ field('tax_id', _('Identifiant fiscal (IF)'), agency.tax_id) }}
+          {{ field('patente', _('Patente'), agency.patente) }}
+          {{ field('contract_prefix', _('Préfixe des contrats'), agency.contract_prefix, required=true, cls='col-md-4', attrs='maxlength="10" dir="ltr"') }}
+          {{ field('engagement_prefix', _('Préfixe des engagements'), agency.engagement_prefix, required=true, cls='col-md-4', attrs='maxlength="10" dir="ltr"') }}
+          {{ field('currency', _('Devise'), agency.currency, cls='col-md-4') }}
+          {{ field('default_caution', _('Caution par défaut'), agency.default_caution, type='number', cls='col-md-6', attrs='step="0.01" min="0"') }}
+          <div class="col-12 small text-muted">{{ _('Format des numéros :') }} <code dir="ltr">{{ agency.contract_prefix }}-{{ _('AAAA') }}-0001</code>. {{ _('Les documents existants gardent leur numéro.') }}</div>
         </div>
       </div>
     </div>
     <div class="col-12">
       <div class="card">
-        <div class="card-header">Conditions imprimées sur le contrat</div>
+        <div class="card-header">{{ _('Conditions imprimées sur le contrat') }}</div>
         <div class="card-body row g-3">
           <div class="col-md-6">
-            <label class="form-label" for="contract_terms">En français</label>
-            <textarea class="form-control" id="contract_terms" name="contract_terms" rows="4">{{ agency.contract_terms or '' }}</textarea>
+            <label class="form-label" for="contract_terms">{{ _('En français') }}</label>
+            <textarea class="form-control" id="contract_terms" name="contract_terms" rows="4" dir="ltr">{{ agency.contract_terms or '' }}</textarea>
           </div>
           <div class="col-md-6">
-            <label class="form-label" for="contract_terms_ar">بالعربية</label>
+            <label class="form-label" for="contract_terms_ar">{{ _('En arabe') }}</label>
             <textarea class="form-control" id="contract_terms_ar" name="contract_terms_ar" rows="4" dir="rtl">{{ agency.contract_terms_ar or '' }}</textarea>
           </div>
         </div>
-        <div class="card-footer bg-white text-end"><button class="btn btn-primary"><i class="bi bi-check-lg"></i> Enregistrer les paramètres</button></div>
+        <div class="card-footer bg-white text-end"><button class="btn btn-primary"><i class="bi bi-check-lg"></i> {{ _('Enregistrer les paramètres') }}</button></div>
       </div>
     </div>
   </div>
